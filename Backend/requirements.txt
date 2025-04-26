@@ -1,0 +1,17 @@
+pydantic
+requests
+python-dotenv
+fastapi
+scikit-learn
+uvicorn
+asyncio
+pypdf2
+nest_asyncio
+pillow
+transformers
+torch
+keras
+jax
+jaxlib
+ultralytics
+python-multipart

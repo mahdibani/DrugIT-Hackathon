@@ -134,36 +134,6 @@ print(result)
 
 ## Project Structure
 
-```
-healthcare-diagnostic-platform/
-├── app/
-│   ├── main.py              # FastAPI application entry point
-│   ├── core/                # Core functionality
-│   │   ├── config.py        # Configuration management
-│   │   ├── security.py      # Authentication and authorization
-│   │   └── logging.py       # Logging configuration
-│   ├── api/                 # API endpoints
-│   │   ├── routes/          # API route definitions
-│   │   └── dependencies.py  # Endpoint dependencies
-│   ├── models/              # Pydantic models for request/response
-│   ├── agents/              # Agent implementations
-│   │   ├── imaging.py       # Medical Imaging Agent
-│   │   ├── document.py      # Document Processing Agent
-│   │   ├── reasoning.py     # Clinical Reasoning Agent
-│   │   ├── treatment.py     # Treatment Recommendation Agent
-│   │   └── orchestrator.py  # Orchestration Agent
-│   └── services/            # External service integrations
-├── ml_models/               # Machine learning model implementations
-│   ├── registry.py          # Model Registry implementation
-│   ├── transformers/        # Vision transformer models
-│   ├── detection/           # Object detection models
-│   └── preprocessing/       # Image preprocessing utilities
-├── tests/                   # Test suite
-├── scripts/                 # Utility scripts
-├── requirements.txt         # Project dependencies
-├── .env.example             # Example environment variables
-└── README.md                # Project documentation
-```
 
 ## Development
 

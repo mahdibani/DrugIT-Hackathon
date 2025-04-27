@@ -17,6 +17,7 @@ from datetime import datetime
 import random
 
 app = FastAPI()
+TREATMENTS_DB_PATH = "treatments_database.json"  
 
 # Configure logging and CORS
 logging.basicConfig(level=logging.INFO)
@@ -43,6 +44,12 @@ MODELS = {
         "model_name": "shimaGh/Brain-Tumor-Detection",
         "target_size": (224, 224)
     },
+    "breast_tumor": {
+        "type": "yolo_local",  # Changed from "local" to "yolo_local" for clarity
+        "model_path": "yolov8_medical_detection.pt", 
+        "target_size": (640, 640),  # Updated to standard YOLO image size
+        "conf_threshold": 0.25  # Added confidence threshold for detections
+    },
     "pneumonia": {
         "type": "huggingface",
         "model_name": "nickmuchi/vit-finetuned-chest-xray-pneumonia",
@@ -62,17 +69,55 @@ for disease, config in MODELS.items():
     try:
         if config["type"] == "huggingface":
             loaded_models[disease] = pipeline("image-classification", model=config["model_name"])
+            logger.info(f"✅ Loaded Hugging Face model for {disease}")
         elif config["type"] == "yolo":
             loaded_models[disease] = YOLO(config["model_name"])
-        logger.info(f"✅ Loaded model for {disease}")
+            logger.info(f"✅ Loaded YOLO model for {disease}")
+        elif config["type"] == "yolo_local":
+            # Load local YOLO model
+            model_path = config["model_path"]
+            if os.path.exists(model_path):
+                loaded_models[disease] = YOLO(model_path)
+                logger.info(f"✅ Loaded local YOLO model for {disease} from {model_path}")
+            else:
+                logger.error(f"❌ Local YOLO model file not found: {model_path}")
+                loaded_models[disease] = None
     except Exception as e:
         logger.error(f"❌ Failed to load model for {disease}: {e}")
         loaded_models[disease] = None
 logger.info("🚀 All medical models loaded!")
 
-# Load treatments database
-TREATMENTS_DB_PATH = "treatments_database.json"  # Updated path to be relative
+# Add breast tumor to the diagnosis database
+def load_diagnosis_database() -> Dict[str, Dict[str, Any]]:
+    # Dummy database (You can replace this with your real database or load from file)
+    return {
+        "brain_tumor": {
+            "description": "A tumor in the brain.",
+            "symptoms": ["Headaches", "Seizures", "Nausea", "Vision problems", "Cognitive difficulties"],
+            "treatment": ["Surgery", "Radiation therapy", "Chemotherapy"],
+            "subtypes": ["Glioblastoma", "Meningioma", "Pituitary tumor"]
+        },
+        "breast_tumor": {
+            "description": "An abnormal growth of cells in the breast tissue.",
+            "symptoms": ["Lump in the breast", "Change in breast size or shape", "Skin dimpling", "Nipple discharge", "Breast pain"],
+            "treatment": ["Surgery", "Radiation therapy", "Chemotherapy", "Hormone therapy", "Targeted therapy"],
+            "subtypes": ["Ductal carcinoma", "Lobular carcinoma", "Inflammatory breast cancer"]
+        },
+        "pneumonia": {
+            "description": "An infection that inflames the air sacs in one or both lungs.",
+            "symptoms": ["Cough", "Fever", "Shortness of breath", "Chest pain"],
+            "treatment": ["Antibiotics", "Rest", "Fluids"],
+            "subtypes": ["Bacterial pneumonia", "Viral pneumonia"]
+        },
+        "malaria": {
+            "description": "A mosquito-borne infectious disease affecting humans and animals.",
+            "symptoms": ["Fever", "Chills", "Headache", "Nausea", "Vomiting"],
+            "treatment": ["Antimalarial medications"],
+            "subtypes": ["Plasmodium falciparum", "Plasmodium vivax"]
+        }
+    }
 
+# Update treatments database to include breast tumor treatments
 def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
     try:
         with open(TREATMENTS_DB_PATH, 'r') as f:
@@ -97,6 +142,32 @@ def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
                     "duration": "6-12 cycles depending on response and tolerance",
                     "contraindications": "Severe myelosuppression, pregnancy",
                     "side_effects": ["Nausea", "Fatigue", "Headache", "Constipation", "Myelosuppression"]
+                }
+            ],
+            "breast_tumor": [
+                {
+                    "name": "Tamoxifen",
+                    "description": "Selective estrogen receptor modulator (SERM) used in hormone therapy for estrogen receptor-positive breast cancer",
+                    "dosage": "20 mg daily",
+                    "duration": "5-10 years depending on cancer stage and risk factors",
+                    "contraindications": "History of deep vein thrombosis, pulmonary embolism, stroke",
+                    "side_effects": ["Hot flashes", "Fatigue", "Mood changes", "Increased risk of endometrial cancer"]
+                },
+                {
+                    "name": "Anastrozole",
+                    "description": "Aromatase inhibitor that blocks estrogen production in postmenopausal women",
+                    "dosage": "1 mg daily",
+                    "duration": "5-10 years",
+                    "contraindications": "Premenopausal status, severe osteoporosis",
+                    "side_effects": ["Joint pain", "Bone loss", "Hot flashes", "Mood changes"]
+                },
+                {
+                    "name": "Trastuzumab",
+                    "description": "Monoclonal antibody targeting HER2 protein for HER2-positive breast cancer",
+                    "dosage": "Initial dose of 8 mg/kg followed by 6 mg/kg every 3 weeks",
+                    "duration": "52 weeks (1 year) for early-stage breast cancer",
+                    "contraindications": "Severe heart disease, pregnancy",
+                    "side_effects": ["Heart dysfunction", "Infusion reactions", "Nausea", "Fatigue"]
                 }
             ],
             "pneumonia": [
@@ -164,74 +235,6 @@ def extract_text_from_pdf(pdf_file: bytes) -> str:
         logger.error(f"PDF extraction error: {str(e)}")
         raise HTTPException(400, "Invalid PDF file")
 
-def load_diagnosis_database() -> Dict[str, Dict[str, Any]]:
-    # Dummy database (You can replace this with your real database or load from file)
-    return {
-        "brain_tumor": {
-            "description": "A tumor in the brain.",
-            "symptoms": ["Headaches", "Seizures", "Nausea", "Vision problems", "Cognitive difficulties"],
-            "treatment": ["Surgery", "Radiation therapy", "Chemotherapy"],
-            "subtypes": ["Glioblastoma", "Meningioma", "Pituitary tumor"]
-        },
-        "pneumonia": {
-            "description": "An infection that inflames the air sacs in one or both lungs.",
-            "symptoms": ["Cough", "Fever", "Shortness of breath", "Chest pain"],
-            "treatment": ["Antibiotics", "Rest", "Fluids"],
-            "subtypes": ["Bacterial pneumonia", "Viral pneumonia"]
-        },
-        "malaria": {
-            "description": "A mosquito-borne infectious disease affecting humans and animals.",
-            "symptoms": ["Fever", "Chills", "Headache", "Nausea", "Vomiting"],
-            "treatment": ["Antimalarial medications"],
-            "subtypes": ["Plasmodium falciparum", "Plasmodium vivax"]
-        }
-    }
-
-def get_severity_level(diagnosis_status: str, confidence: float) -> str:
-    """Determine severity level based on diagnosis and confidence"""
-    if diagnosis_status.lower() == "positive":
-        if confidence > 90:
-            return "severe"
-        return "moderate"
-    return "normal"
-
-def select_treatments(disease_type: str, is_positive: bool) -> List[Dict[str, Any]]:
-    """Select appropriate treatments based on disease type and diagnosis"""
-    treatments_db = load_treatments_database()
-    
-    # If the disease type exists in treatments database and diagnosis is positive
-    if disease_type in treatments_db and is_positive:
-        # Return all available treatments for this disease type
-        available_treatments = treatments_db.get(disease_type, [])
-        # Limit to 3 treatments max
-        return available_treatments[:3]
-    
-    # For negative diagnoses or unavailable disease types, return supportive care recommendations
-    if disease_type == "brain_tumor":
-        return [{
-            "name": "Supportive Care - Headache Management",
-            "description": "Non-opioid pain relievers for headache management",
-            "dosage": "As directed on package or by physician",
-            "duration": "As needed for symptom relief",
-            "side_effects": ["Stomach upset", "Nausea"]
-        }]
-    elif disease_type == "pneumonia":
-        return [{
-            "name": "Supportive Care - Respiratory Support",
-            "description": "Mucolytic agents and expectorants to manage respiratory symptoms",
-            "dosage": "As directed on package or by physician",
-            "duration": "7-10 days or as needed",
-            "side_effects": ["Nausea", "Drowsiness"]
-        }]
-    else:  # malaria or others
-        return [{
-            "name": "Supportive Care - Symptomatic Relief",
-            "description": "Antipyretics and analgesics for fever and discomfort",
-            "dosage": "As directed on package or by physician",
-            "duration": "As needed for symptom relief",
-            "side_effects": ["Stomach upset", "Drowsiness"]
-        }]
-
 # Routes
 @app.post("/analyze")
 async def analyze(
@@ -251,19 +254,35 @@ async def analyze(
             raise HTTPException(400, "Invalid PDF file type")
 
         image_path = save_temp_image(image_file)
-        img = process_image(image_path, MODELS[disease_type].get("target_size", (224, 224)))
-
-        if MODELS[disease_type]["type"] == "huggingface":
-            results = loaded_models[disease_type](img)
+        
+        # Process image based on model type
+        model_config = MODELS[disease_type]
+        model = loaded_models[disease_type]
+        
+        if model is None:
+            raise HTTPException(500, f"Model for {disease_type} is not available")
+            
+        if model_config["type"] == "huggingface":
+            img = process_image(image_path, model_config.get("target_size", (224, 224)))
+            results = model(img)
             top_result = results[0]
             label = str(top_result["label"])
             confidence = round(top_result["score"] * 100, 2)
             diagnosis = "Normal" if any(kw in label.lower() for kw in ["no", "normal", "negative"]) else "Infected"
-        else:
-            results = loaded_models[disease_type].predict(image_path)
+        elif model_config["type"] in ["yolo", "yolo_local"]:
+            # For both YOLO online and local models
+            conf_threshold = model_config.get("conf_threshold", 0.25)
+            results = model.predict(image_path, conf=conf_threshold)
             detections = results[0].boxes
-            confidence = round(detections.conf.max().item() * 100, 2) if len(detections) > 0 else 0
-            diagnosis = "Infected" if len(detections) > 0 else "Normal"
+            
+            if len(detections) > 0:
+                confidence = round(detections.conf.max().item() * 100, 2)
+                diagnosis = "Infected"
+                logger.info(f"YOLO detection for {disease_type}: {len(detections)} objects detected with confidence {confidence}%")
+            else:
+                confidence = 0
+                diagnosis = "Normal"
+                logger.info(f"YOLO detection for {disease_type}: No objects detected")
 
         pdf_content = await pdf_file.read()
         pdf_text = extract_text_from_pdf(pdf_content)
@@ -291,7 +310,7 @@ async def analyze(
             "medical_imaging": {
                 "diagnosis": diagnosis,
                 "confidence": f"{confidence}%",
-                "model_type": disease_type  # Fixed to return proper disease_type
+                "model_type": disease_type
             },
             "document_analysis": {
                 "summary": pdf_summary,
@@ -304,7 +323,7 @@ async def analyze(
         raise he
     except Exception as e:
         logger.error(f"Analysis error: {str(e)}")
-        raise HTTPException(500, "Analysis failed")
+        raise HTTPException(500, f"Analysis failed: {str(e)}")
     finally:
         if image_path and os.path.exists(image_path):
             os.remove(image_path)
@@ -337,6 +356,8 @@ async def get_possible_diagnoses(analysis_results: Dict[str, Any]):
         if not disease_type:
             if "brain" in str(analysis_results).lower():
                 disease_type = "brain_tumor"
+            elif "breast" in str(analysis_results).lower():
+                disease_type = "breast_tumor"
             elif "lung" in str(analysis_results).lower() or "pneumonia" in str(analysis_results).lower():
                 disease_type = "pneumonia"
             elif "malaria" in str(analysis_results).lower() or "blood" in str(analysis_results).lower():
@@ -397,6 +418,11 @@ async def get_possible_diagnoses(analysis_results: Dict[str, Any]):
                     response["possible_diagnoses"].extend([
                         {"name": "Migraine", "probability": "Moderate", "is_primary": False},
                         {"name": "Intracranial Hemorrhage", "probability": "Low", "is_primary": False}
+                    ])
+                elif disease_type == "breast_tumor":
+                    response["possible_diagnoses"].extend([
+                        {"name": "Fibrocystic Breast Changes", "probability": "Moderate", "is_primary": False},
+                        {"name": "Fibroadenoma", "probability": "Moderate", "is_primary": False}
                     ])
                 elif disease_type == "pneumonia":
                     response["possible_diagnoses"].extend([
@@ -482,6 +508,52 @@ async def suggest_assessment(request: Request):
     except Exception as e:
         logger.error(f"Error generating assessment suggestion: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate assessment suggestion")
+
+def get_severity_level(diagnosis_status: str, confidence: float) -> str:
+    """Determine severity level based on diagnosis and confidence"""
+    if diagnosis_status.lower() == "positive":
+        if confidence > 90:
+            return "severe"
+        return "moderate"
+    return "normal"
+
+def select_treatments(disease_type: str, is_positive: bool) -> List[Dict[str, Any]]:
+    """Select appropriate treatments based on disease type and diagnosis"""
+    treatments_db = load_treatments_database()
+    
+    # If the disease type exists in treatments database and diagnosis is positive
+    if disease_type in treatments_db and is_positive:
+        # Return all available treatments for this disease type
+        available_treatments = treatments_db.get(disease_type, [])
+        # Limit to 3 treatments max
+        return available_treatments[:3]
+    
+    # For negative diagnoses or unavailable disease types, return supportive care recommendations
+    if disease_type == "brain_tumor":
+        return [{
+            "name": "Supportive Care - Headache Management",
+            "description": "Non-opioid pain relievers for headache management",
+            "dosage": "As directed on package or by physician",
+            "duration": "As needed for symptom relief",
+            "side_effects": ["Stomach upset", "Nausea"]
+        }]
+    elif disease_type == "pneumonia":
+        return [{
+            "name": "Supportive Care - Respiratory Support",
+            "description": "Mucolytic agents and expectorants to manage respiratory symptoms",
+            "dosage": "As directed on package or by physician",
+            "duration": "7-10 days or as needed",
+            "side_effects": ["Nausea", "Drowsiness"]
+        }]
+    else:  # malaria or others
+        return [{
+            "name": "Supportive Care - Symptomatic Relief",
+            "description": "Antipyretics and analgesics for fever and discomfort",
+            "dosage": "As directed on package or by physician",
+            "duration": "As needed for symptom relief",
+            "side_effects": ["Stomach upset", "Drowsiness"]
+        }]
+
 
 # Fix: Updated endpoint to correctly parse request body
 @app.post("/review_treatments")
@@ -616,12 +688,18 @@ async def generate_final_report(request: Request):
             logger.error(f"LLM summary generation failed: {str(e)}")
             diagnostic_summary = f"Based on medical imaging analysis, the patient's diagnosis is {diagnosis_status} for {disease_type.replace('_', ' ').title()} with {confidence} confidence level. The clinical document review indicates further evaluation is needed."
         
-        # Generate additional instructions based on severity
+        # Generate additional instructions based on severity and disease type
         additional_instructions = None
         if severity_level == "severe":
-            additional_instructions = "Schedule immediate follow-up within 48 hours. Monitor for changes in symptoms, especially headache intensity, neurological deficits, or signs of increased intracranial pressure. Contact emergency services if condition deteriorates."
+            if disease_type == "breast_tumor":
+                additional_instructions = "Schedule immediate oncology consultation within 48 hours. Arrange for additional imaging studies including bilateral mammography and breast MRI. Begin preparation for potential biopsy procedure."
+            else:
+                additional_instructions = "Schedule immediate follow-up within 48 hours. Monitor for changes in symptoms, especially headache intensity, neurological deficits, or signs of increased intracranial pressure. Contact emergency services if condition deteriorates."
         elif severity_level == "moderate":
-            additional_instructions = "Schedule follow-up within 7-14 days. Monitor symptoms and report any significant changes. Maintain adequate hydration and rest."
+            if disease_type == "breast_tumor":
+                additional_instructions = "Schedule follow-up within 7-14 days. Arrange for additional diagnostic imaging. Monitor any changes in breast tissue appearance or texture and report immediately."
+            else:
+                additional_instructions = "Schedule follow-up within 7-14 days. Monitor symptoms and report any significant changes. Maintain adequate hydration and rest."
         
         # Create case ID and date for the report
         case_id = f"MIP-{disease_type.upper()[:3]}-{random.randint(10000, 99999)}"

@@ -4,7 +4,7 @@ import api from "../services/api";
 import { AnalysisResult } from "../types";
 import "../App.css";
 
-type DiseaseType = 'brain_tumor' | 'pneumonia' | 'malaria';
+type DiseaseType = 'brain_tumor' | 'pneumonia' | 'malaria' | 'breast_tumor';
 
 const UploadPage: React.FC<{ setResultData: (data: AnalysisResult | null) => void }> = ({ setResultData }) => {
   const navigate = useNavigate();
@@ -66,6 +66,7 @@ const UploadPage: React.FC<{ setResultData: (data: AnalysisResult | null) => voi
             <option value="brain_tumor">Neuroimaging Analysis</option>
             <option value="pneumonia">Pulmonary Assessment</option>
             <option value="malaria">Hematological Screening</option>
+            <option value="breast_tumor">Breast Cancer Screening</option>
           </select>
         </div>
 

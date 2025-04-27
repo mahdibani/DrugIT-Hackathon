@@ -1,0 +1,659 @@
+{
+  "brain_tumor": {
+    "description": "A brain tumor is an abnormal growth of cells within the brain or central spinal canal. Tumors can be benign (non-cancerous) or malignant (cancerous). Primary brain tumors originate in the brain, while secondary brain tumors (metastatic) spread from cancer elsewhere in the body.",
+    "subtypes": [
+      "Gliomas (including astrocytomas, oligodendrogliomas, and glioblastomas)",
+      "Meningiomas",
+      "Pituitary adenomas",
+      "Schwannomas (acoustic neuromas)",
+      "Medulloblastomas",
+      "Craniopharyngiomas",
+      "Lymphomas of the brain"
+    ],
+    "symptoms": [
+      "Headaches, often worse in the morning or when lying down",
+      "Seizures or convulsions",
+      "Blurred vision, double vision, or loss of peripheral vision",
+      "Difficulty speaking or understanding speech (aphasia)",
+      "Weakness or paralysis on one side of the body (hemiparesis)",
+      "Balance problems or difficulty walking",
+      "Memory problems or personality changes",
+      "Nausea or vomiting, especially in the morning",
+      "Confusion or disorientation",
+      "Hearing problems or ringing in ears",
+      "Drowsiness or changes in consciousness"
+    ],
+    "risk_factors": [
+      "Family history of brain tumors",
+      "Radiation exposure to the head",
+      "Certain genetic conditions (e.g., Li-Fraumeni syndrome, neurofibromatosis, tuberous sclerosis, von Hippel-Lindau disease)",
+      "Age (certain types are more common in different age groups)",
+      "Immune system disorders",
+      "Prior cancer diagnosis",
+      "Exposure to certain chemicals (e.g., vinyl chloride, formaldehyde)"
+    ],
+    "diagnosis_methods": [
+      "Neurological examination",
+      "MRI (Magnetic Resonance Imaging) scan with contrast",
+      "CT (Computed Tomography) scan",
+      "PET (Positron Emission Tomography) scan",
+      "Angiogram (for vascular tumors)",
+      "Lumbar puncture (spinal tap)",
+      "Electroencephalogram (EEG)",
+      "Stereotactic biopsy",
+      "Open biopsy during surgery",
+      "Molecular and genetic testing of tumor tissue"
+    ],
+    "treatment": [
+      "Surgical removal (craniotomy, minimally invasive surgery, laser ablation)",
+      "Radiation therapy (conventional external beam radiation, stereotactic radiosurgery, proton therapy)",
+      "Chemotherapy (temozolomide, carmustine, lomustine)",
+      "Targeted therapy (bevacizumab, everolimus)",
+      "Immunotherapy (checkpoint inhibitors)",
+      "Alternating electric field therapy (Optune device)",
+      "Anti-seizure medications (for seizure control)",
+      "Corticosteroids (to reduce inflammation and swelling)",
+      "Shunting procedures (for hydrocephalus)",
+      "Clinical trials of new treatments",
+      "Palliative care for symptom management"
+    ],
+    "complications": [
+      "Increased intracranial pressure",
+      "Hydrocephalus (buildup of fluid in the brain)",
+      "Brain herniation (life-threatening)",
+      "Permanent neurological deficits",
+      "Cognitive impairment",
+      "Recurrence after treatment",
+      "Side effects from treatments",
+      "Stroke",
+      "Infection"
+    ],
+    "prognosis": {
+      "factors_affecting_prognosis": [
+        "Tumor type and grade",
+        "Location and size of tumor",
+        "Age and overall health",
+        "Extent of surgical removal possible",
+        "Molecular characteristics of tumor"
+      ],
+      "survival_rates": "Varies widely by tumor type - from over 90% 5-year survival for benign meningiomas to less than 10% 5-year survival for glioblastoma"
+    },
+    "prevention": "No known prevention strategies for primary brain tumors. Regular medical check-ups and reporting unusual symptoms promptly may help with early detection.",
+    "statistics": {
+      "incidence": "About 24 per 100,000 population per year for all primary brain tumors",
+      "mortality": "About 4.5 per 100,000 population per year",
+      "age_distribution": "Can occur at any age, but many types have peak incidence in 50s and 60s",
+      "gender_distribution": "Some types are more common in one gender (e.g., meningiomas are more common in women)"
+    },
+    "research_areas": [
+      "Immunotherapy approaches",
+      "Targeted molecular therapies",
+      "Blood-brain barrier disruption techniques",
+      "Improved imaging methods",
+      "Vaccine therapies",
+      "Precision medicine based on tumor genomics"
+    ],
+    "support_resources": [
+      "National Brain Tumor Society",
+      "American Brain Tumor Association",
+      "Brain Tumor Foundation",
+      "Cancer Support Community"
+    ]
+  },
+  "pneumonia": {
+    "description": "Pneumonia is an infection that inflames the air sacs (alveoli) in one or both lungs, which may fill with fluid or pus, causing cough with phlegm, fever, chills, and difficulty breathing. It can be caused by bacteria, viruses, fungi, or other organisms.",
+    "subtypes": [
+      "Community-acquired pneumonia (CAP)",
+      "Hospital-acquired pneumonia (HAP)",
+      "Ventilator-associated pneumonia (VAP)",
+      "Aspiration pneumonia",
+      "Cryptogenic organizing pneumonia (COP)",
+      "Walking pneumonia (atypical pneumonia)",
+      "Double pneumonia (affecting both lungs)",
+      "Necrotizing pneumonia"
+    ],
+    "causative_agents": [
+      "Bacterial: Streptococcus pneumoniae, Haemophilus influenzae, Mycoplasma pneumoniae, Legionella pneumophila",
+      "Viral: Influenza virus, respiratory syncytial virus (RSV), SARS-CoV-2, adenovirus",
+      "Fungal: Pneumocystis jirovecii, Cryptococcus, Aspergillus",
+      "Parasitic: Toxoplasma gondii"
+    ],
+    "symptoms": [
+      "Cough with thick yellow, green, or blood-tinged phlegm",
+      "Fever, sweating, and shaking chills",
+      "Difficulty breathing or rapid breathing",
+      "Shortness of breath, even when resting",
+      "Chest pain that worsens when breathing deeply or coughing",
+      "Fatigue and weakness",
+      "Nausea, vomiting, or diarrhea",
+      "Confusion or changes in mental awareness (especially in older adults)",
+      "Lower than normal body temperature (in older adults or people with weak immune systems)",
+      "Bluish lips and fingernails (cyanosis)",
+      "Loss of appetite"
+    ],
+    "risk_factors": [
+      "Age: Infants under 2 and adults over 65",
+      "Chronic diseases (COPD, asthma, heart disease, diabetes)",
+      "Weakened or suppressed immune system (HIV/AIDS, chemotherapy, organ transplant)",
+      "Smoking or exposure to secondhand smoke",
+      "Hospitalization, especially in intensive care units",
+      "Mechanical ventilation",
+      "Chronic alcohol abuse",
+      "Recent viral respiratory infection",
+      "Difficulty swallowing (dysphagia)",
+      "Malnutrition",
+      "Recent surgery or trauma"
+    ],
+    "diagnosis_methods": [
+      "Physical examination with stethoscope (auscultation)",
+      "Chest X-ray (primary diagnostic tool)",
+      "CT scan (for complicated cases)",
+      "Blood tests (complete blood count, blood cultures)",
+      "Pulse oximetry (oxygen saturation measurement)",
+      "Arterial blood gas analysis",
+      "Sputum culture and gram stain",
+      "Pleural fluid culture (thoracentesis)",
+      "Bronchoscopy with bronchoalveolar lavage",
+      "Polymerase chain reaction (PCR) tests",
+      "Urine antigen tests for specific pathogens"
+    ],
+    "treatment": {
+      "general_measures": [
+        "Rest and adequate fluid intake",
+        "Oxygen therapy for low blood oxygen",
+        "Pain and fever relievers (acetaminophen, NSAIDs)",
+        "Humidity therapy and postural drainage",
+        "Mechanical ventilation for severe cases"
+      ],
+      "medications": [
+        "Antibiotics (for bacterial pneumonia): penicillins, macrolides, fluoroquinolones, cephalosporins",
+        "Antiviral medications (for viral pneumonia): oseltamivir, zanamivir",
+        "Antifungal medications (for fungal pneumonia): fluconazole, amphotericin B",
+        "Cough medicine (only if coughing prevents rest)",
+        "Bronchodilators (for wheezing)"
+      ],
+      "hospitalization_criteria": [
+        "Age over 65 or under 2 years",
+        "Significant underlying conditions",
+        "Respiratory rate > 30 breaths per minute",
+        "Blood pressure changes (systolic < 90 mm Hg)",
+        "Confusion or altered mental status",
+        "Oxygen saturation < 92%",
+        "Multiple lobe involvement",
+        "Severe dehydration or inability to take oral medications"
+      ]
+    },
+    "complications": [
+      "Bacteremia (bacteria in bloodstream) and septic shock",
+      "Pleural effusion (fluid around lungs)",
+      "Empyema (pus in pleural space)",
+      "Lung abscesses",
+      "Acute respiratory distress syndrome (ARDS)",
+      "Respiratory failure requiring ventilation",
+      "Renal failure",
+      "Meningitis (if infection spreads to brain)",
+      "Pericarditis (inflammation of heart sac)",
+      "Post-pneumonia syndrome (persistent symptoms)"
+    ],
+    "prognosis": {
+      "factors_affecting_prognosis": [
+        "Age and overall health",
+        "Type of pneumonia and causative organism",
+        "Extent of lung involvement",
+        "Presence of complications",
+        "Timeliness of treatment",
+        "Antibiotic resistance"
+      ],
+      "recovery_time": "1-3 weeks for young healthy adults; up to 6-8 weeks for elderly or those with underlying conditions",
+      "mortality_rate": "Range from <1% for young healthy adults to 30% for severe hospital-acquired pneumonia"
+    },
+    "prevention": [
+      "Vaccination (pneumococcal vaccine, influenza vaccine)",
+      "Hand hygiene and respiratory etiquette",
+      "Smoking cessation",
+      "Adequate nutrition and hydration",
+      "Management of underlying conditions",
+      "Avoiding close contact with sick individuals",
+      "Raising head of bed for hospitalized patients",
+      "Oral care protocols in hospitals"
+    ],
+    "statistics": {
+      "incidence": "About 450 million cases per year worldwide",
+      "mortality": "Approximately 1.3 million deaths in children under 5 years annually worldwide",
+      "hospitalization": "Around 1.5 million hospitalizations annually in the US",
+      "economic_burden": "Estimated $13 billion in direct healthcare costs annually in the US alone"
+    },
+    "research_areas": [
+      "New antibiotics for resistant pathogens",
+      "Rapid diagnostic tests",
+      "Novel vaccine development",
+      "Immunomodulatory therapies",
+      "Microbiome-based interventions"
+    ],
+    "support_resources": [
+      "American Lung Association",
+      "CDC Pneumonia Resources",
+      "World Health Organization Pneumonia Program"
+    ]
+  },
+  "malaria": {
+    "description": "Malaria is a life-threatening disease transmitted through the bite of infected female Anopheles mosquitoes. It is caused by Plasmodium parasites, which infect red blood cells and can lead to severe complications if not treated promptly.",
+    "subtypes": {
+      "parasite_species": [
+        "Plasmodium falciparum (most deadly form)",
+        "Plasmodium vivax (can cause relapses)",
+        "Plasmodium ovale (can cause relapses)",
+        "Plasmodium malariae (can persist for years)",
+        "Plasmodium knowlesi (zoonotic form transmitted from monkeys to humans)"
+      ],
+      "clinical_classifications": [
+        "Uncomplicated malaria",
+        "Severe malaria",
+        "Cerebral malaria",
+        "Congenital malaria",
+        "Transfusion-transmitted malaria"
+      ]
+    },
+    "life_cycle": [
+      "Infection begins when an infected mosquito injects Plasmodium sporozoites during blood meal",
+      "Sporozoites travel to the liver and infect hepatocytes (liver cells)",
+      "Parasites multiply in liver cells (exo-erythrocytic schizogony)",
+      "Merozoites released from liver infect red blood cells",
+      "Parasites multiply in red blood cells (erythrocytic schizogony)",
+      "Red blood cells rupture, releasing merozoites that infect more red blood cells",
+      "Some parasites develop into gametocytes (sexual forms)",
+      "Mosquito ingests gametocytes during blood meal",
+      "Sexual reproduction occurs in mosquito gut (sporogonic cycle)",
+      "New sporozoites develop and migrate to mosquito salivary glands"
+    ],
+    "symptoms": {
+      "initial_symptoms": [
+        "Fever and chills (often cyclical)",
+        "Sweats",
+        "Headache (often severe)",
+        "Nausea and vomiting",
+        "Body aches and muscle pain",
+        "Fatigue and weakness",
+        "General malaise"
+      ],
+      "severe_symptoms": [
+        "High fever (>40°C/104°F)",
+        "Altered consciousness or coma",
+        "Difficulty breathing (respiratory distress)",
+        "Abnormal bleeding",
+        "Jaundice (yellowing of skin and eyes)",
+        "Shock",
+        "Dark or bloody urine",
+        "Severe anemia",
+        "Multiple seizures",
+        "Hypoglycemia (low blood sugar)"
+      ],
+      "classic_pattern": "Paroxysms of fever, chills, and sweating occurring every 24-72 hours (depending on species)"
+    },
+    "risk_factors": [
+      "Travel or residence in endemic areas (tropical and subtropical regions)",
+      "Pregnancy (reduced immunity and placental accumulation of parasites)",
+      "Young children without acquired immunity",
+      "HIV/AIDS or other immunocompromising conditions",
+      "Splenectomy (removal of spleen)",
+      "Outdoor activities in endemic areas, especially at dawn and dusk",
+      "Inadequate preventive measures (no prophylaxis, bed nets, or insect repellent)",
+      "Poverty and limited access to healthcare",
+      "Climate change expanding mosquito habitats"
+    ],
+    "diagnosis_methods": {
+      "microscopy": [
+        "Thick and thin blood smears (gold standard)",
+        "Giemsa staining for visualization",
+        "Quantification of parasitemia (percentage of infected red blood cells)"
+      ],
+      "rapid_tests": [
+        "Rapid diagnostic tests (RDTs) detecting parasite antigens",
+        "Immunochromatographic tests"
+      ],
+      "molecular_tests": [
+        "Polymerase chain reaction (PCR)",
+        "Loop-mediated isothermal amplification (LAMP)",
+        "Next-generation sequencing"
+      ],
+      "other_tests": [
+        "Complete blood count (showing anemia, thrombocytopenia)",
+        "Liver and kidney function tests",
+        "Blood glucose measurement",
+        "Serology for antibody detection (epidemiological studies)"
+      ]
+    },
+    "treatment": {
+      "uncomplicated_malaria": [
+        "Artemisinin-based combination therapies (ACTs) - first-line treatment",
+        "Chloroquine (for sensitive P. vivax, P. ovale, P. malariae, and some P. falciparum)",
+        "Atovaquone-proguanil (Malarone)",
+        "Mefloquine",
+        "Primaquine or tafenoquine (for radical cure of P. vivax and P. ovale)"
+      ],
+      "severe_malaria": [
+        "Intravenous or intramuscular artesunate (first choice)",
+        "Intravenous quinine or quinidine (alternatives)",
+        "Followed by complete course of oral ACT after patient improves",
+        "Supportive care (fluids, blood transfusions, anticonvulsants, glucose)"
+      ],
+      "special_populations": [
+        "Pregnant women: Modified drug regimens avoiding certain medications",
+        "Children: Weight-based dosing",
+        "Travelers: Different regimens based on resistance patterns in visited regions"
+      ],
+      "drug_resistance_management": [
+        "Combination therapies to reduce resistance development",
+        "Regular monitoring of drug efficacy",
+        "Molecular surveillance for resistance markers"
+      ]
+    },
+    "complications": [
+      "Cerebral malaria (encephalopathy, coma)",
+      "Severe anemia (due to hemolysis of red blood cells)",
+      "Acute respiratory distress syndrome (ARDS)",
+      "Acute kidney injury",
+      "Hypoglycemia (low blood sugar)",
+      "Metabolic acidosis",
+      "Hemoglobinuria (blackwater fever)",
+      "Disseminated intravascular coagulation (DIC)",
+      "Splenic rupture",
+      "Placental malaria and adverse pregnancy outcomes",
+      "Post-malaria neurological syndrome",
+      "Chronic complications from repeated infections"
+    ],
+    "prevention": {
+      "chemoprophylaxis": [
+        "Atovaquone-proguanil (Malarone)",
+        "Doxycycline",
+        "Mefloquine",
+        "Chloroquine (only in areas without resistance)",
+        "Primaquine (for short-term travel)"
+      ],
+      "vector_control": [
+        "Insecticide-treated bed nets (ITNs)",
+        "Indoor residual spraying (IRS)",
+        "Larviciding (targeting mosquito breeding sites)",
+        "Environmental management (drainage, removing standing water)",
+        "Genetically modified mosquitoes"
+      ],
+      "personal_protection": [
+        "DEET or picaridin-based insect repellents",
+        "Wearing long-sleeved clothing",
+        "Staying in screened or air-conditioned accommodations",
+        "Avoiding outdoor activities during peak mosquito feeding times"
+      ],
+      "vaccines": [
+        "RTS,S/AS01 (Mosquirix) - first approved malaria vaccine",
+        "R21/Matrix-M - newer vaccine with higher efficacy",
+        "Other vaccine candidates in development"
+      ]
+    },
+    "prognosis": {
+      "factors_affecting_prognosis": [
+        "Plasmodium species (P. falciparum has highest mortality)",
+        "Timing of treatment initiation",
+        "Presence of complications",
+        "Age and immune status",
+        "Pregnancy status",
+        "Access to intensive care"
+      ],
+      "mortality_rates": "Untreated P. falciparum can have >10% mortality; with prompt treatment, mortality drops to <0.5%"
+    },
+    "statistics": {
+      "global_burden": "About 241 million cases worldwide annually (WHO 2021)",
+      "mortality": "Approximately 627,000 deaths annually, mostly children under 5 in Africa",
+      "geographic_distribution": "Predominantly in Africa (95% of cases), followed by Southeast Asia, Eastern Mediterranean, Western Pacific, and Americas",
+      "economic_impact": "Estimated $12 billion annual cost in Africa alone through direct costs and lost productivity"
+    },
+    "research_areas": [
+      "New antimalarial drug development",
+      "Novel vaccine approaches",
+      "Genetic modification of mosquitoes",
+      "Monoclonal antibody prophylaxis",
+      "Parasite biology and drug resistance mechanisms",
+      "Implementation science for control programs",
+      "Elimination strategies"
+    ],
+    "support_resources": [
+      "World Health Organization Malaria Program",
+      "Malaria Atlas Project",
+      "Roll Back Malaria Partnership",
+      "CDC Malaria Information",
+      "Medicines for Malaria Venture",
+      "Bill & Melinda Gates Foundation Malaria Program"
+    ]
+  },
+  "breast_cancer": {
+    "description": "Breast cancer is a disease in which cells in the breast grow uncontrollably, forming tumors that can invade surrounding tissues and metastasize (spread) to distant parts of the body. It is one of the most common cancers worldwide, affecting primarily women but occasionally men as well.",
+    "subtypes": {
+      "histological_types": [
+        "Invasive ductal carcinoma (IDC) - 70-80% of all breast cancers",
+        "Invasive lobular carcinoma (ILC) - 10-15% of breast cancers",
+        "Ductal carcinoma in situ (DCIS) - precancerous condition",
+        "Lobular carcinoma in situ (LCIS) - marker for increased risk",
+        "Inflammatory breast cancer - rare but aggressive",
+        "Paget's disease of the nipple",
+        "Phyllodes tumors",
+        "Angiosarcoma of the breast"
+      ],
+      "molecular_subtypes": [
+        "Luminal A (hormone receptor positive, HER2 negative, low Ki-67)",
+        "Luminal B (hormone receptor positive, HER2 positive or negative, high Ki-67)",
+        "HER2-enriched (hormone receptor negative, HER2 positive)",
+        "Triple-negative/basal-like (hormone receptor negative, HER2 negative)",
+        "Normal-like"
+      ],
+      "stage_classification": {
+        "stage_0": "Carcinoma in situ (DCIS or LCIS)",
+        "stage_I": "Tumor ≤2 cm, no lymph node involvement",
+        "stage_II": "Tumor 2-5 cm and/or limited lymph node involvement",
+        "stage_III": "Locally advanced cancer with extensive lymph node involvement",
+        "stage_IV": "Metastatic cancer that has spread to other parts of body"
+      }
+    },
+    "symptoms": [
+      "New lump or thickening in the breast or underarm area",
+      "Change in breast size, shape, or appearance",
+      "Dimpling, puckering, or redness of breast skin",
+      "Breast or nipple pain",
+      "Nipple retraction (turning inward)",
+      "Nipple discharge other than breast milk (especially bloody)",
+      "Swelling of all or part of the breast",
+      "Skin changes like redness, scaling, or thickening",
+      "Axillary (underarm) lymph node enlargement",
+      "Bone pain, neurological symptoms, or respiratory symptoms (in metastatic disease)"
+    ],
+    "risk_factors": {
+      "unmodifiable_factors": [
+        "Female sex (women are 100x more likely than men)",
+        "Increasing age (majority of cases in women >50)",
+        "Family history of breast or ovarian cancer",
+        "Genetic mutations (BRCA1, BRCA2, PALB2, ATM, CHEK2, etc.)",
+        "Personal history of breast cancer or certain non-cancerous breast diseases",
+        "Dense breast tissue",
+        "Early menstruation (before age 12)",
+        "Late menopause (after age 55)",
+        "Radiation exposure to chest (e.g., for treatment of another cancer)",
+        "Certain benign breast conditions (e.g., atypical hyperplasia)"
+      ],
+      "modifiable_factors": [
+        "Obesity (especially after menopause)",
+        "Physical inactivity",
+        "Alcohol consumption (risk increases with amount consumed)",
+        "Long-term use of hormone replacement therapy",
+        "Reproductive history (never having children or having first child after 30)",
+        "Not breastfeeding",
+        "Recent oral contraceptive use"
+      ]
+    },
+    "diagnosis_methods": {
+      "screening": [
+        "Mammogram (X-ray of the breast)",
+        "Digital breast tomosynthesis (3D mammography)",
+        "Breast MRI (for high-risk individuals)",
+        "Clinical breast examination",
+        "Breast self-examination (awareness)"
+      ],
+      "diagnostic_procedures": [
+        "Diagnostic mammogram",
+        "Breast ultrasound",
+        "Magnetic resonance imaging (MRI)",
+        "Biopsy (fine needle aspiration, core needle, vacuum-assisted, surgical)",
+        "Sentinel lymph node biopsy",
+        "Axillary lymph node dissection"
+      ],
+      "pathological_evaluation": [
+        "Histological examination",
+        "Immunohistochemistry for hormone receptors (ER, PR) and HER2",
+        "FISH or other tests for HER2 amplification",
+        "Ki-67 proliferation index",
+        "Oncotype DX, MammaPrint, or other genomic tests",
+        "Complete blood count and liver function tests",
+        "Bone scan, CT scan, PET scan (for metastasis evaluation)"
+      ]
+    },
+    "treatment": {
+      "local_treatments": [
+        "Surgery (lumpectomy/breast-conserving surgery or mastectomy)",
+        "Sentinel lymph node biopsy or axillary lymph node dissection",
+        "Radiation therapy (external beam radiation, brachytherapy, intraoperative)",
+        "Reconstructive surgery (immediate or delayed)"
+      ],
+      "systemic_treatments": {
+        "chemotherapy": [
+          "Neoadjuvant (before surgery) therapy",
+          "Adjuvant (after surgery) therapy",
+          "Anthracyclines (doxorubicin, epirubicin)",
+          "Taxanes (paclitaxel, docetaxel)",
+          "Cyclophosphamide",
+          "Carboplatin",
+          "5-fluorouracil",
+          "Methotrexate"
+        ],
+        "hormone_therapy": [
+          "Selective estrogen receptor modulators (tamoxifen)",
+          "Aromatase inhibitors (letrozole, anastrozole, exemestane)",
+          "Estrogen receptor downregulators (fulvestrant)",
+          "Luteinizing hormone-releasing hormone agonists (goserelin)"
+        ],
+        "targeted_therapy": [
+          "HER2-directed therapies (trastuzumab, pertuzumab, T-DM1, lapatinib)",
+          "CDK4/6 inhibitors (palbociclib, ribociclib, abemaciclib)",
+          "PI3K inhibitors (alpelisib)",
+          "PARP inhibitors (olaparib, talazoparib) for BRCA mutations",
+          "mTOR inhibitors (everolimus)",
+          "Immunotherapy (pembrolizumab for some triple-negative cancers)"
+        ]
+      },
+      "treatment_by_stage": {
+        "stage_0": "Surgery, possibly radiation, possibly hormone therapy",
+        "stage_I_II": "Surgery, possibly radiation, possibly adjuvant systemic therapy",
+        "stage_III": "Neoadjuvant therapy, surgery, radiation, adjuvant systemic therapy",
+        "stage_IV": "Systemic therapy, surgery and radiation for palliation"
+      },
+      "supportive_care": [
+        "Pain management",
+        "Lymphedema prevention and management",
+        "Bone-strengthening medications",
+        "Psychological support",
+        "Physical therapy",
+        "Nutritional support"
+      ]
+    },
+    "complications": {
+      "disease_related": [
+        "Metastasis to bone, liver, lungs, brain",
+        "Pleural effusion",
+        "Spinal cord compression",
+        "Pathological fractures",
+        "Hypercalcemia",
+        "Cancer-related fatigue",
+        "Cachexia (wasting syndrome)"
+      ],
+      "treatment_related": [
+        "Lymphedema (arm swelling after lymph node removal)",
+        "Cardiotoxicity from certain chemotherapies",
+        "Neuropathy from taxanes",
+        "Osteoporosis from hormone therapy",
+        "Fatigue from radiation",
+        "Cognitive changes ('chemo brain')",
+        "Secondary cancers",
+        "Infertility",
+        "Body image concerns",
+        "Psychological impacts (anxiety, depression)"
+      ]
+    },
+    "prognosis": {
+      "survival_rates": {
+        "5_year_overall": "~90% for all breast cancers combined",
+        "by_stage": {
+          "stage_0": "Nearly 100%",
+          "stage_I": "~98%",
+          "stage_II": "~90%",
+          "stage_III": "~72%",
+          "stage_IV": "~28% (but improving with newer therapies)"
+        }
+      },
+      "prognostic_factors": [
+        "Stage at diagnosis (size, lymph node involvement, metastasis)",
+        "Tumor grade",
+        "Molecular subtype",
+        "Response to neoadjuvant therapy",
+        "Genomic assay results (Oncotype DX, MammaPrint)",
+        "Age and overall health",
+        "Inherited genetic mutations"
+      ],
+      "recurrence": {
+        "early_recurrence": "Within first 5 years (more common in triple-negative and HER2+)",
+        "late_recurrence": "After 5 years (more common in hormone receptor-positive)",
+        "local_recurrence": "In breast or chest wall",
+        "distant_recurrence": "Metastatic spread to other organs"
+      }
+    },
+    "prevention": {
+      "primary_prevention": [
+        "Maintain healthy weight",
+        "Regular physical activity (at least 150 minutes/week)",
+        "Limit alcohol consumption",
+        "Avoid or limit hormone replacement therapy",
+        "Breastfeeding when possible",
+        "Risk-reducing medications (tamoxifen, raloxifene, aromatase inhibitors) for high-risk women",
+        "Prophylactic surgery for very high-risk women (BRCA carriers)"
+      ],
+      "secondary_prevention": [
+        "Regular screening mammography",
+        "Clinical breast exams",
+        "Breast self-awareness",
+        "More intensive surveillance for high-risk women"
+      ]
+    },
+    "statistics": {
+      "incidence": "About 2.3 million new cases worldwide annually",
+      "prevalence": "Over 7.8 million women alive with a history of breast cancer",
+      "mortality": "685,000 deaths globally each year",
+      "lifetime_risk": "About 13% (1 in 8) for women in the US",
+      "male_breast_cancer": "Less than 1% of all breast cancers",
+      "demographic_variations": "Higher incidence in developed countries, but higher mortality in developing countries"
+    },
+    "research_areas": [
+      "Liquid biopsies for early detection and monitoring",
+      "Immunotherapy approaches",
+      "Novel targeted therapies",
+      "De-escalation of therapy for low-risk disease",
+      "Overcoming resistance to therapy",
+      "Biomarkers for treatment selection",
+      "Addressing disparities in care",
+      "Male breast cancer biology",
+      "Prevention strategies"
+    ],
+    "support_resources": [
+      "National Breast Cancer Foundation",
+      "Susan G. Komen Foundation",
+      "Breast Cancer Research Foundation",
+      "Living Beyond Breast Cancer",
+      "Triple Negative Breast Cancer Foundation",
+      "Young Survival Coalition"
+    ]
+  }
+}

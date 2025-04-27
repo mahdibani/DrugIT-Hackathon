@@ -1,10 +1,38 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnalysisResult } from "../types";
+import api from "../services/api";
 import "../App.css";
 
-const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultData }) => {
+interface ResultsPageProps {
+  resultData: AnalysisResult | null;
+}
+
+const ResultsPage: React.FC<ResultsPageProps> = ({ resultData }) => {
   const navigate = useNavigate();
+  const [diagnoses, setDiagnoses] = useState<any>(null);
+  const [isLoadingDiagnoses, setIsLoadingDiagnoses] = useState(false);
+  const [diagnosisError, setDiagnosisError] = useState("");
+
+  useEffect(() => {
+    const fetchPossibleDiagnoses = async () => {
+      if (!resultData) return;
+      try {
+        setIsLoadingDiagnoses(true);
+        setDiagnosisError("");
+
+        const response = await api.post("/possible_diagnoses", resultData);
+        setDiagnoses(response.data);
+      } catch (err) {
+        console.error("Failed to fetch diagnoses:", err);
+        setDiagnosisError("Failed to load diagnostic information");
+      } finally {
+        setIsLoadingDiagnoses(false);
+      }
+    };
+
+    fetchPossibleDiagnoses();
+  }, [resultData]);
 
   if (!resultData) {
     return (
@@ -30,6 +58,7 @@ const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultDa
         <h1>Integrated Medical Analysis Report</h1>
 
         <div className="result-sections">
+          {/* Imaging Analysis Section */}
           <div className={`result-card ${isCritical ? "critical" : "normal"}`}>
             <h2>Imaging Analysis</h2>
             <div className="result-item">
@@ -46,7 +75,7 @@ const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultDa
               <span>Analysis Method:</span>
               <span>{medical_imaging.model_type.toUpperCase()} Model</span>
             </div>
-            
+
             {isLowConfidence && (
               <div className="confidence-warning">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -59,6 +88,7 @@ const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultDa
             )}
           </div>
 
+          {/* Document Analysis Section */}
           <div className="result-card">
             <h2>Clinical Document Summary</h2>
             <div className="result-item">
@@ -78,6 +108,69 @@ const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultDa
           </div>
         </div>
 
+        {/* Possible Diagnoses Section */}
+        <div className="diagnoses-section">
+          <h2>Possible Diagnoses</h2>
+
+          {isLoadingDiagnoses && (
+            <div className="loading-diagnoses">
+              <div className="spinner"></div>
+              <p>Generating diagnostic information...</p>
+            </div>
+          )}
+
+          {diagnosisError && (
+            <div className="error-message">
+              {diagnosisError}
+            </div>
+          )}
+
+          {diagnoses && !isLoadingDiagnoses && !diagnosisError && (
+            <div className="diagnoses-list">
+              {diagnoses.possible_diagnoses.map((diagnosis: any, index: number) => (
+                <div
+                  key={index}
+                  className={`diagnosis-card ${diagnosis.is_primary ? 'primary-diagnosis' : 'secondary-diagnosis'}`}
+                >
+                  <div className="diagnosis-header">
+                    <h3>{diagnosis.name}</h3>
+                    <span className={`probability-badge ${diagnosis.probability.toLowerCase()}`}>
+                      {diagnosis.probability} Probability
+                    </span>
+                  </div>
+
+                  {diagnosis.description && (
+                    <p className="diagnosis-description">{diagnosis.description}</p>
+                  )}
+
+                  {diagnosis.symptoms && diagnosis.symptoms.length > 0 && (
+                    <div className="diagnosis-details">
+                      <h4>Common Symptoms</h4>
+                      <ul className="symptom-list">
+                        {diagnosis.symptoms.map((symptom: string, idx: number) => (
+                          <li key={idx}>{symptom}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {diagnosis.treatments && diagnosis.treatments.length > 0 && (
+                    <div className="diagnosis-details">
+                      <h4>Possible Treatments</h4>
+                      <ul className="treatment-list">
+                        {diagnosis.treatments.map((treatment: string, idx: number) => (
+                          <li key={idx}>{treatment}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Action Bar */}
         <div className="action-bar">
           <button className="button" onClick={() => navigate("/")}>
             Start New Analysis

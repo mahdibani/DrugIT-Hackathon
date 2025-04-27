@@ -15,6 +15,20 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ resultData }) => {
   const [diagnosisError, setDiagnosisError] = useState("");
   const [currentDate] = useState(new Date().toLocaleDateString());
   const [currentTime] = useState(new Date().toLocaleTimeString());
+  
+  // Doctor's input states
+  const [doctorInput, setDoctorInput] = useState("");
+  const [showDoctorInput, setShowDoctorInput] = useState(false);
+  const [finalReport, setFinalReport] = useState<any>(null);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportError, setReportError] = useState("");
+  
+  // New states for suggestion feature
+  const [suggestedAssessment, setSuggestedAssessment] = useState("");
+  const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
+  const [suggestionError, setSuggestionError] = useState("");
+  const [showSuggestion, setShowSuggestion] = useState(false);
+  const [isEditingSuggestion, setIsEditingSuggestion] = useState(false);
 
   useEffect(() => {
     const fetchPossibleDiagnoses = async () => {
@@ -35,6 +49,81 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ resultData }) => {
 
     fetchPossibleDiagnoses();
   }, [resultData]);
+  
+  // New function to fetch suggested assessment
+  const fetchSuggestedAssessment = async () => {
+    if (!diagnoses || !resultData) {
+      setSuggestionError("Diagnostic data not available for generating suggestions");
+      return;
+    }
+    
+    try {
+      setIsLoadingSuggestion(true);
+      setSuggestionError("");
+      
+      const response = await api.post("/suggest_assessment", {
+        diagnostic_data: diagnoses,
+        analysis_results: resultData
+      });
+      
+      setSuggestedAssessment(response.data.suggested_assessment);
+      setShowSuggestion(true);
+    } catch (err) {
+      console.error("Failed to fetch suggested assessment:", err);
+      setSuggestionError("Failed to generate assessment suggestion");
+    } finally {
+      setIsLoadingSuggestion(false);
+    }
+  };
+  
+  // Modified function to show doctor input with suggestion
+  const handleShowDoctorInput = async () => {
+    setShowDoctorInput(true);
+    await fetchSuggestedAssessment();
+  };
+  
+  // Function to accept the suggestion
+  const handleAcceptSuggestion = () => {
+    setDoctorInput(suggestedAssessment);
+    setIsEditingSuggestion(false);
+  };
+  
+  // Function to edit the suggestion
+  const handleEditSuggestion = () => {
+    setDoctorInput(suggestedAssessment);
+    setIsEditingSuggestion(true);
+  };
+  
+  // Function to request a new suggestion
+  const handleNewSuggestion = async () => {
+    await fetchSuggestedAssessment();
+  };
+
+  const handleDoctorInputSubmit = async () => {
+    if (!doctorInput.trim() || !diagnoses || !resultData) {
+      setReportError("Please provide your medical assessment");
+      return;
+    }
+
+    try {
+      setIsGeneratingReport(true);
+      setReportError("");
+
+      const response = await api.post("/generate_final_report", {
+        doctor_assessment: doctorInput,
+        diagnostic_data: diagnoses,
+        analysis_results: resultData
+      });
+
+      setFinalReport(response.data);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      console.error("Failed to generate final report:", err);
+      setReportError("Failed to generate final report. Please try again.");
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
 
   if (!resultData) {
     return (
@@ -49,6 +138,142 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ resultData }) => {
     );
   }
 
+  // If final report is available, show that instead of the analysis results
+  if (finalReport) {
+    return (
+      <div className="container">
+        <div className="results-page">
+          <div className="report-header">
+            <h1>Final Medical Report</h1>
+            <div className="report-meta">
+              <div className="report-timestamp">
+                <span>Report Generated: {currentDate} at {currentTime}</span>
+                <span>Report ID: MIP-FINAL-{Math.floor(Math.random() * 1000000)}</span>
+              </div>
+              <div className={`severity-indicator ${finalReport.severity_level}`}>
+                <span className="severity-dot"></span>
+                {finalReport.severity_level === "severe" ? "High Priority" : 
+                 finalReport.severity_level === "moderate" ? "Medium Priority" : "Normal"}
+              </div>
+            </div>
+          </div>
+
+          {/* Patient Information */}
+          <div className="result-card">
+            <div className="card-header">
+              <h2>Patient Information</h2>
+            </div>
+            <div className="patient-info">
+              <p><strong>Case ID:</strong> {finalReport.case_id}</p>
+              <p><strong>Analysis Date:</strong> {finalReport.analysis_date}</p>
+            </div>
+          </div>
+
+          {/* Diagnostic Summary */}
+          <div className={`result-card ${finalReport.severity_level}`}>
+            <div className="card-header">
+              <h2>Diagnostic Summary</h2>
+            </div>
+            <div className="diagnostic-summary">
+              <p>{finalReport.diagnostic_summary}</p>
+            </div>
+          </div>
+
+          {/* Doctor's Assessment */}
+          <div className="result-card doctor-assessment">
+            <div className="card-header">
+              <h2>Physician's Assessment</h2>
+            </div>
+            <div className="doctor-assessment-content">
+              <p>{finalReport.doctor_assessment}</p>
+            </div>
+          </div>
+
+          {/* Treatment Recommendations */}
+          <div className="result-card treatment-recommendations">
+            <div className="card-header">
+              <h2>Treatment Recommendations</h2>
+            </div>
+            <div className="treatments-list">
+              {finalReport.recommended_treatments.map((treatment: any, index: number) => (
+                <div key={index} className="treatment-item">
+                  <h3>{treatment.name}</h3>
+                  <p className="treatment-description">{treatment.description}</p>
+                  
+                  {treatment.dosage && (
+                    <div className="treatment-detail">
+                      <strong>Dosage:</strong> {treatment.dosage}
+                    </div>
+                  )}
+                  
+                  {treatment.duration && (
+                    <div className="treatment-detail">
+                      <strong>Duration:</strong> {treatment.duration}
+                    </div>
+                  )}
+                  
+                  {treatment.contraindications && (
+                    <div className="treatment-detail">
+                      <strong>Contraindications:</strong> {treatment.contraindications}
+                    </div>
+                  )}
+                  
+                  {treatment.side_effects && treatment.side_effects.length > 0 && (
+                    <div className="treatment-detail">
+                      <strong>Possible Side Effects:</strong>
+                      <ul className="side-effects-list">
+                        {treatment.side_effects.map((effect: string, idx: number) => (
+                          <li key={idx}>{effect}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Additional Instructions */}
+          {finalReport.additional_instructions && (
+            <div className="result-card">
+              <div className="card-header">
+                <h2>Additional Instructions</h2>
+              </div>
+              <div className="additional-instructions">
+                <p>{finalReport.additional_instructions}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Disclaimer Section */}
+          <div className="report-disclaimer">
+            <p><strong>Disclaimer:</strong> This report is generated using AI-assisted analysis and clinical assessment. It is intended to support clinical decision-making, not replace professional medical judgment. Treatment recommendations should be verified by qualified healthcare professionals before implementation.</p>
+          </div>
+
+          {/* Action Bar */}
+          <div className="action-bar">
+            <button className="button print-button" onClick={() => window.print()}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+              Print Final Report
+            </button>
+            <button className="button" onClick={() => navigate("/")}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              Start New Analysis
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Original results page code
   const { medical_imaging, document_analysis } = resultData;
   const isCritical = medical_imaging.diagnosis === "Infected";
   const confidenceValue = parseFloat(medical_imaging.confidence.replace('%', ''));
@@ -322,29 +547,144 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ resultData }) => {
           )}
         </div>
 
-        {/* Disclaimer Section */}
-        <div className="report-disclaimer">
-          <p><strong>Disclaimer:</strong> This report is generated using AI-assisted analysis and is intended to support clinical decision-making, not replace professional medical judgment. Results should be verified by qualified healthcare professionals.</p>
-        </div>
+        {/* Doctor's Input Section with Suggestion Feature */}
+        {!showDoctorInput && diagnoses && !isLoadingDiagnoses && (
+          <div className="doctor-action">
+            <button 
+              className="button primary-button"
+              onClick={handleShowDoctorInput}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Add Physician's Assessment
+            </button>
+          </div>
+        )}
 
-        {/* Action Bar */}
-        <div className="action-bar">
-          <button className="button print-button" onClick={() => window.print()}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 6 2 18 2 18 9"></polyline>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-              <rect x="6" y="14" width="12" height="8"></rect>
-            </svg>
-            Print Report
-          </button>
-          <button className="button" onClick={() => navigate("/")}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            Start New Analysis
-          </button>
-        </div>
+        {showDoctorInput && (
+          <div className="doctor-input-section">
+            <h2>Physician's Assessment</h2>
+            
+            {/* Suggestion feature */}
+            {isLoadingSuggestion && (
+              <div className="loading-suggestion">
+                <div className="spinner"></div>
+                <p>Generating assessment suggestion...</p>
+              </div>
+            )}
+            
+            {suggestionError && (
+              <div className="error-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12" y2="16"></line>
+                </svg>
+                {suggestionError}
+              </div>
+            )}
+            
+            {showSuggestion && suggestedAssessment && (
+              <div className="suggestion-panel">
+                <div className="suggestion-header">
+                  <h3>Suggested Assessment</h3>
+                  <div className="suggestion-actions">
+                    <button className="suggestion-button accept" onClick={handleAcceptSuggestion}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      Use This
+                    </button>
+                    <button className="suggestion-button edit" onClick={handleEditSuggestion}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+                      Edit
+                    </button>
+                    <button className="suggestion-button refresh" onClick={handleNewSuggestion}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
+                      </svg>
+                      New Suggestion
+                    </button>
+                  </div>
+                </div>
+                <div className="suggestion-content">
+                  <p>{suggestedAssessment}</p>
+                </div>
+              </div>
+            )}
+            
+            <div className="input-group">
+              <label htmlFor="doctorAssessment">
+                Enter your clinical assessment:
+                {isEditingSuggestion && (
+                  <span className="editing-label">(Editing suggestion)</span>
+                )}
+              </label>
+              <textarea
+                id="doctorAssessment"
+                rows={6}
+                placeholder="Enter your professional assessment based on the medical imaging results and clinical document analysis..."
+                value={doctorInput}
+                onChange={(e) => setDoctorInput(e.target.value)}
+                className="doctor-assessment-input"
+              ></textarea>
+            </div>
+            
+            {reportError && (
+              <div className="error-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12" y2="16"></line>
+                </svg>
+                {reportError}
+              </div>
+            )}
+            
+            {/* Treatment Review Section */}
+            {doctorInput.trim().length > 0 && (
+              <div className="treatment-review-section">
+                <h3>Treatment Review</h3>
+                <p className="review-instruction">Review the automated treatment recommendations and make any necessary adjustments before finalizing the report.</p>
+                
+                {/* This would be populated with treatments from diagnoses that the doctor can modify */}
+                <div className="treatments-review-list">
+                  {diagnoses && diagnoses.disease_type && (
+                    <>
+                      {/* Treatment modification UI would go here */}
+                      <div className="treatment-actions">
+                        <button className="button secondary-button" onClick={() => setShowDoctorInput(false)}>
+                          Back to Diagnosis
+                        </button>
+                        <button className="button primary-button" onClick={handleDoctorInputSubmit}>
+                          {isGeneratingReport ? (
+                            <>
+                              <div className="spinner small"></div>
+                              Finalizing Report...
+                            </>
+                          ) : (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                              </svg>
+                              Validate and Generate Final Report
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

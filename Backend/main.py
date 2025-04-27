@@ -1,16 +1,18 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import pipeline
-from ultralytics import YOLO
-from PIL import Image
-import shutil
-import os
-import uvicorn
+import json
+import google.generativeai as genai
 import logging
+import os
+import shutil
 import PyPDF2
 import io
+import uvicorn
+from PIL import Image
 from openai import OpenAI
+from ultralytics import YOLO
+from transformers import pipeline
 
 app = FastAPI()
 
@@ -93,6 +95,37 @@ def extract_text_from_pdf(pdf_file: bytes) -> str:
         logger.error(f"PDF extraction error: {str(e)}")
         raise HTTPException(400, "Invalid PDF file")
 
+async def generate_diagnosis(patient_data: dict) -> str:
+    prompt = f"""
+    Please analyze the following patient information and predict the possible diseases the patient may have,
+    along with the likelihood percentage for each condition.
+    The results will be presented to a doctor,
+    so please ensure that the answer is professional and medically appropriate.
+
+    Patient Data:
+    {json.dumps(patient_data, indent=2)}
+
+    Format your answer like:
+    Disease 1: XX%
+    Disease 2: XX%
+    Disease 3: XX%
+    """
+
+    # Initialize Google Gemini client
+    genai.configure(api_key="AIzaSyCUroQyxF1h6f1ZaPZluKF8ldP-wjVf_bM")  # Replace with your actual API key
+
+    # Create a model for generating content
+    model = genai.GenerativeModel('gemini-1.5-pro')
+
+    # Generate the content based on the prompt
+    try:
+        response = model.generate_content(prompt)
+        print(response.text)
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Gemini generation error: {str(e)}")
+        raise HTTPException(500, "Diagnosis generation failed")
+
 # Combined analysis endpoint
 @app.post("/analyze")
 async def analyze(
@@ -132,7 +165,7 @@ async def analyze(
         pdf_content = await pdf_file.read()
         pdf_text = extract_text_from_pdf(pdf_content)
         
-        # Generate PDF summary
+        # Generate PDF summary using OpenAI
         summary_prompt = f"""Analyze this medical document and provide a structured summary:
         {pdf_text[:15000]}
         
@@ -152,7 +185,8 @@ async def analyze(
         )
         pdf_summary = llm_response.choices[0].message.content.strip()
 
-        return JSONResponse(content={
+        # Combine the data for patient
+        patient_data = {
             "medical_imaging": {
                 "diagnosis": diagnosis,
                 "confidence": f"{confidence}%",
@@ -162,6 +196,17 @@ async def analyze(
                 "summary": pdf_summary,
                 "page_count": len(PyPDF2.PdfReader(io.BytesIO(pdf_content)).pages),
                 "file_name": pdf_file.filename
+            }
+        }
+
+        # Generate diagnosis based on the patient data
+        generated_diagnosis = await generate_diagnosis(patient_data)
+
+        return JSONResponse(content={
+            "medical_imaging": patient_data["medical_imaging"],
+            "document_analysis": patient_data["document_analysis"],
+            "generated_diagnosis": {
+                "text": generated_diagnosis  
             }
         })
 

@@ -5,7 +5,7 @@ import "../App.css";
 
 const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultData }) => {
   const navigate = useNavigate();
-
+  
   if (!resultData) {
     return (
       <div className="container">
@@ -18,17 +18,21 @@ const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultDa
       </div>
     );
   }
-
-  const { medical_imaging, document_analysis } = resultData;
+  
+  const { medical_imaging, document_analysis, generated_diagnosis } = resultData;
   const isCritical = medical_imaging.diagnosis === "Infected";
   const confidenceValue = parseFloat(medical_imaging.confidence.replace('%', ''));
   const isLowConfidence = confidenceValue < 85;
+  
+  // Handle both string and object formats for generated_diagnosis
+  const diagnosisText = typeof generated_diagnosis === 'string' 
+    ? generated_diagnosis 
+    : generated_diagnosis?.text || "No diagnosis available";
 
   return (
     <div className="container">
       <div className={`results-page ${isCritical ? "critical" : "normal"}`}>
         <h1>Integrated Medical Analysis Report</h1>
-
         <div className="result-sections">
           <div className={`result-card ${isCritical ? "critical" : "normal"}`}>
             <h2>Imaging Analysis</h2>
@@ -46,7 +50,7 @@ const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultDa
               <span>Analysis Method:</span>
               <span>{medical_imaging.model_type.toUpperCase()} Model</span>
             </div>
-            
+           
             {isLowConfidence && (
               <div className="confidence-warning">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -58,7 +62,7 @@ const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultDa
               </div>
             )}
           </div>
-
+          
           <div className="result-card">
             <h2>Clinical Document Summary</h2>
             <div className="result-item">
@@ -76,8 +80,17 @@ const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultDa
               ))}
             </div>
           </div>
+         
+          <div className="result-card">
+            <h2>Generated Diagnosis</h2>
+            <div className="diagnosis-content">
+              {diagnosisText.split('\n').map((line, index) => (
+                <p key={index}>{line}</p>
+              ))}
+            </div>
+          </div>
         </div>
-
+        
         <div className="action-bar">
           <button className="button" onClick={() => navigate("/")}>
             Start New Analysis

@@ -33,15 +33,22 @@ app.add_middleware(
 # Initialize OpenAI client for PDF summarization
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="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",
 )
 
 # Medical imaging models configuration
+# Update the MODELS dictionary to include breast_tumor
 MODELS = {
     "brain_tumor": {
         "type": "huggingface",
         "model_name": "shimaGh/Brain-Tumor-Detection",
         "target_size": (224, 224)
+    },
+    "breast_tumor": {
+        "type": "yolo_local",
+        "model_path": "yolov8_medical_detection.pt", 
+        "target_size": (640, 640), 
+        "conf_threshold": 0.25
     },
     "pneumonia": {
         "type": "huggingface",
@@ -55,23 +62,76 @@ MODELS = {
         "target_size": (640, 640)
     }
 }
-
 loaded_models = {}
 logger.info("🔄 Loading medical imaging models...")
 for disease, config in MODELS.items():
     try:
         if config["type"] == "huggingface":
             loaded_models[disease] = pipeline("image-classification", model=config["model_name"])
+            logger.info(f"✅ Loaded Hugging Face model for {disease}")
         elif config["type"] == "yolo":
             loaded_models[disease] = YOLO(config["model_name"])
-        logger.info(f"✅ Loaded model for {disease}")
+            logger.info(f"✅ Loaded YOLO model for {disease}")
+        elif config["type"] == "yolo_local":
+            # Load local YOLO model
+            model_path = config["model_path"]
+            if os.path.exists(model_path):
+                loaded_models[disease] = YOLO(model_path)
+                logger.info(f"✅ Loaded local YOLO model for {disease} from {model_path}")
+            else:
+                logger.error(f"❌ Local YOLO model file not found: {model_path}")
+                loaded_models[disease] = None
     except Exception as e:
         logger.error(f"❌ Failed to load model for {disease}: {e}")
         loaded_models[disease] = None
 logger.info("🚀 All medical models loaded!")
 
-# Load treatments database
-TREATMENTS_DB_PATH = "treatments_database.json"  # Updated path to be relative
+# Update the load_diagnosis_database function to include breast_tumor
+def load_diagnosis_database() -> Dict[str, Dict[str, Any]]:
+    # Enhanced database with more comprehensive information
+    return {
+        "brain_tumor": {
+            "description": "A tumor in the brain that can be benign or malignant.",
+            "symptoms": ["Headaches", "Seizures", "Nausea", "Vision problems", "Cognitive difficulties", 
+                        "Balance problems", "Speech difficulties", "Personality changes"],
+            "treatment": ["Surgery", "Radiation therapy", "Chemotherapy", "Targeted therapy", "Immunotherapy"],
+            "severity_levels": ["Low-grade (I-II)", "High-grade (III-IV)"],
+            "risk_factors": ["Radiation exposure", "Family history", "Genetic disorders", "Immune system disorders"],
+            "diagnostic_criteria": ["MRI scan", "CT scan", "Biopsy", "Neurological examination"],
+            "subtypes": ["Glioblastoma", "Meningioma", "Pituitary tumor", "Astrocytoma", "Oligodendroglioma", "Ependymoma"]
+        },
+        "breast_tumor": {
+            "description": "An abnormal growth of cells in the breast tissue that can be benign or malignant.",
+            "symptoms": ["Lump in the breast", "Change in breast size or shape", "Skin dimpling", 
+                        "Nipple discharge", "Breast pain", "Redness or thickening of the nipple or breast skin"],
+            "treatment": ["Surgery", "Radiation therapy", "Chemotherapy", "Hormone therapy", "Targeted therapy", "Immunotherapy"],
+            "severity_levels": ["Stage 0", "Stage I", "Stage II", "Stage III", "Stage IV"],
+            "risk_factors": ["Age", "Family history", "Genetic mutations", "Hormone therapy", "Alcohol consumption", "Obesity"],
+            "diagnostic_criteria": ["Mammogram", "Ultrasound", "MRI", "Biopsy", "Blood tests"],
+            "subtypes": ["Ductal carcinoma in situ", "Invasive ductal carcinoma", "Lobular carcinoma", 
+                        "Inflammatory breast cancer", "Triple-negative breast cancer", "HER2-positive breast cancer"]
+        },
+        "pneumonia": {
+            "description": "An infection that inflames the air sacs in one or both lungs, which may fill with fluid.",
+            "symptoms": ["Cough with phlegm", "Fever", "Shortness of breath", "Chest pain", "Fatigue", 
+                        "Confusion (especially in older adults)", "Low body temperature", "Bluish lips or nailbeds"],
+            "treatment": ["Antibiotics", "Antiviral medications", "Rest", "Fluids", "Oxygen therapy", "Hospitalization for severe cases"],
+            "severity_levels": ["Mild", "Moderate", "Severe", "Critical"],
+            "risk_factors": ["Age (very young or very old)", "Smoking", "Chronic diseases", "Weakened immune system", "Hospitalization"],
+            "diagnostic_criteria": ["Chest X-ray", "Blood tests", "Sputum test", "Pulse oximetry", "CT scan"],
+            "subtypes": ["Bacterial pneumonia", "Viral pneumonia", "Mycoplasma pneumonia", "Fungal pneumonia", "Aspiration pneumonia"]
+        },
+        "malaria": {
+            "description": "A mosquito-borne infectious disease affecting humans caused by Plasmodium parasites.",
+            "symptoms": ["Fever", "Chills", "Headache", "Nausea", "Vomiting", "Muscle pain", "Fatigue", 
+                        "Sweating", "Chest or abdominal pain", "Enlarged spleen"],
+            "treatment": ["Antimalarial medications", "Supportive care", "Hydration", "Antipyretics"],
+            "severity_levels": ["Uncomplicated", "Severe/Complicated"],
+            "risk_factors": ["Travel to endemic areas", "Lack of preventive measures", "Young age", "Pregnancy", "HIV/AIDS"],
+            "diagnostic_criteria": ["Blood smear examination", "Rapid diagnostic tests", "PCR tests", "Serological tests"],
+            "subtypes": ["Plasmodium falciparum", "Plasmodium vivax", "Plasmodium ovale", "Plasmodium malariae", "Plasmodium knowlesi"]
+        }
+    }
 
 def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
     try:
@@ -79,7 +139,7 @@ def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
             return json.load(f)
     except Exception as e:
         logger.error(f"Failed to load treatments database: {e}")
-        # Fallback mock data if database file is not accessible
+        # Enhanced fallback mock data with more comprehensive information
         return {
             "brain_tumor": [
                 {
@@ -88,7 +148,9 @@ def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
                     "dosage": "4-16 mg daily, divided into 2-4 doses",
                     "duration": "As needed to control symptoms",
                     "contraindications": "Systemic fungal infections, hypersensitivity",
-                    "side_effects": ["Mood changes", "Increased appetite", "Fluid retention", "Insomnia"]
+                    "side_effects": ["Mood changes", "Increased appetite", "Fluid retention", "Insomnia", "Elevated blood sugar"],
+                    "efficacy_rate": "70-80% for symptom management",
+                    "monitoring_requirements": ["Blood glucose levels", "Blood pressure", "Electrolytes"]
                 },
                 {
                     "name": "Temozolomide",
@@ -96,7 +158,61 @@ def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
                     "dosage": "150-200 mg/m² daily for 5 consecutive days per 28-day cycle",
                     "duration": "6-12 cycles depending on response and tolerance",
                     "contraindications": "Severe myelosuppression, pregnancy",
-                    "side_effects": ["Nausea", "Fatigue", "Headache", "Constipation", "Myelosuppression"]
+                    "side_effects": ["Nausea", "Fatigue", "Headache", "Constipation", "Myelosuppression"],
+                    "efficacy_rate": "45-60% for glioblastoma patients",
+                    "monitoring_requirements": ["Complete blood count", "Liver function tests", "Kidney function tests"]
+                },
+                {
+                    "name": "Bevacizumab",
+                    "description": "Monoclonal antibody that targets vascular endothelial growth factor (VEGF)",
+                    "dosage": "10 mg/kg every 2 weeks",
+                    "duration": "Until disease progression or unacceptable toxicity",
+                    "contraindications": "Recent surgery, uncontrolled hypertension, pregnancy",
+                    "side_effects": ["Hypertension", "Proteinuria", "Delayed wound healing", "Bleeding", "Blood clots"],
+                    "efficacy_rate": "30-40% response rate in recurrent glioblastoma",
+                    "monitoring_requirements": ["Blood pressure", "Urinalysis", "Cardiac function"]
+                }
+            ],
+            "breast_tumor": [
+                {
+                    "name": "Tamoxifen",
+                    "description": "Selective estrogen receptor modulator (SERM) used in hormone therapy for estrogen receptor-positive breast cancer",
+                    "dosage": "20 mg daily",
+                    "duration": "5-10 years depending on cancer stage and risk factors",
+                    "contraindications": "History of deep vein thrombosis, pulmonary embolism, stroke",
+                    "side_effects": ["Hot flashes", "Fatigue", "Mood changes", "Increased risk of endometrial cancer", "Blood clots"],
+                    "efficacy_rate": "Reduces recurrence risk by 40-50% in ER-positive breast cancer",
+                    "monitoring_requirements": ["Gynecological examination", "Endometrial monitoring", "Blood counts"]
+                },
+                {
+                    "name": "Anastrozole",
+                    "description": "Aromatase inhibitor that blocks estrogen production in postmenopausal women",
+                    "dosage": "1 mg daily",
+                    "duration": "5-10 years",
+                    "contraindications": "Premenopausal status, severe osteoporosis",
+                    "side_effects": ["Joint pain", "Bone loss", "Hot flashes", "Mood changes", "Increased cholesterol"],
+                    "efficacy_rate": "Reduces recurrence risk by 50-60% in postmenopausal women",
+                    "monitoring_requirements": ["Bone density scans", "Cholesterol levels", "Liver function tests"]
+                },
+                {
+                    "name": "Trastuzumab",
+                    "description": "Monoclonal antibody targeting HER2 protein for HER2-positive breast cancer",
+                    "dosage": "Initial dose of 8 mg/kg followed by 6 mg/kg every 3 weeks",
+                    "duration": "52 weeks (1 year) for early-stage breast cancer",
+                    "contraindications": "Severe heart disease, pregnancy",
+                    "side_effects": ["Heart dysfunction", "Infusion reactions", "Nausea", "Fatigue", "Headache"],
+                    "efficacy_rate": "Reduces recurrence risk by 40-50% in HER2-positive breast cancer",
+                    "monitoring_requirements": ["Cardiac function (LVEF)", "CBC", "Liver and kidney function"]
+                },
+                {
+                    "name": "Palbociclib",
+                    "description": "CDK4/6 inhibitor used in combination with hormone therapy for HR+/HER2- advanced breast cancer",
+                    "dosage": "125 mg once daily for 21 days, followed by 7 days off",
+                    "duration": "Until disease progression or unacceptable toxicity",
+                    "contraindications": "Severe neutropenia, liver impairment",
+                    "side_effects": ["Neutropenia", "Leukopenia", "Fatigue", "Nausea", "Infections"],
+                    "efficacy_rate": "Improves progression-free survival by 10-12 months",
+                    "monitoring_requirements": ["Complete blood count", "Liver function tests", "ECG monitoring"]
                 }
             ],
             "pneumonia": [
@@ -106,7 +222,9 @@ def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
                     "dosage": "500 mg on day 1, then 250 mg daily on days 2-5",
                     "duration": "5 days",
                     "contraindications": "Known hypersensitivity, history of QT prolongation",
-                    "side_effects": ["Diarrhea", "Nausea", "Abdominal pain", "Headache"]
+                    "side_effects": ["Diarrhea", "Nausea", "Abdominal pain", "Headache", "QT interval prolongation"],
+                    "efficacy_rate": "85-90% for community-acquired pneumonia",
+                    "monitoring_requirements": ["Liver function", "ECG if history of cardiac issues"]
                 },
                 {
                     "name": "Amoxicillin-Clavulanate",
@@ -114,7 +232,19 @@ def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
                     "dosage": "875 mg/125 mg twice daily",
                     "duration": "7-10 days",
                     "contraindications": "Penicillin allergy, severe hepatic impairment",
-                    "side_effects": ["Diarrhea", "Rash", "Nausea", "Vomiting"]
+                    "side_effects": ["Diarrhea", "Rash", "Nausea", "Vomiting", "Liver enzyme elevation"],
+                    "efficacy_rate": "80-85% for community-acquired pneumonia",
+                    "monitoring_requirements": ["Liver function tests", "Kidney function tests"]
+                },
+                {
+                    "name": "Levofloxacin",
+                    "description": "Respiratory fluoroquinolone with excellent coverage for pneumonia pathogens",
+                    "dosage": "750 mg once daily",
+                    "duration": "5-7 days",
+                    "contraindications": "QT prolongation, tendon disorders, myasthenia gravis",
+                    "side_effects": ["Tendonitis", "QT prolongation", "GI disturbances", "Headache", "Photosensitivity"],
+                    "efficacy_rate": "90-95% for community-acquired pneumonia",
+                    "monitoring_requirements": ["Tendon symptoms", "QT interval if risk factors present"]
                 }
             ],
             "malaria": [
@@ -124,7 +254,9 @@ def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
                     "dosage": "4 tablets twice daily for 3 days (total of 24 tablets)",
                     "duration": "3 days",
                     "contraindications": "First trimester of pregnancy, severe malaria",
-                    "side_effects": ["Headache", "Dizziness", "Loss of appetite", "Muscle and joint pain"]
+                    "side_effects": ["Headache", "Dizziness", "Loss of appetite", "Muscle and joint pain", "Palpitations"],
+                    "efficacy_rate": "95-98% cure rate for P. falciparum malaria",
+                    "monitoring_requirements": ["Parasite count", "Hemoglobin levels", "ECG if cardiac history"]
                 },
                 {
                     "name": "Atovaquone-Proguanil",
@@ -132,19 +264,29 @@ def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
                     "dosage": "4 tablets once daily for 3 days",
                     "duration": "3 days",
                     "contraindications": "Severe renal impairment, pregnancy",
-                    "side_effects": ["Abdominal pain", "Nausea", "Vomiting", "Headache"]
+                    "side_effects": ["Abdominal pain", "Nausea", "Vomiting", "Headache", "Elevated liver enzymes"],
+                    "efficacy_rate": "90-95% cure rate for uncomplicated malaria",
+                    "monitoring_requirements": ["Liver function", "Renal function", "Parasite count"]
+                },
+                {
+                    "name": "Quinine with Doxycycline",
+                    "description": "Combination therapy for chloroquine-resistant malaria",
+                    "dosage": "Quinine 10 mg/kg three times daily + Doxycycline 100 mg twice daily",
+                    "duration": "7 days",
+                    "contraindications": "G6PD deficiency, pregnancy, children under 8 years (doxycycline)",
+                    "side_effects": ["Cinchonism (tinnitus, headache, nausea)", "Photosensitivity", "GI upset"],
+                    "efficacy_rate": "85-90% cure rate for resistant strains",
+                    "monitoring_requirements": ["ECG monitoring", "Blood glucose", "Complete blood count"]
                 }
             ]
         }
-
-# Helper functions
 def save_temp_image(upload_file: UploadFile):
-    temp_dir = "temp"
-    os.makedirs(temp_dir, exist_ok=True)
-    temp_path = os.path.join(temp_dir, upload_file.filename)
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(upload_file.file, buffer)
-    return temp_path
+        temp_dir = "temp"
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_path = os.path.join(temp_dir, upload_file.filename)
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(upload_file.file, buffer)
+        return temp_path
 
 def process_image(image_path: str, target_size=(224, 224)):
     try:
@@ -253,12 +395,18 @@ async def analyze(
         image_path = save_temp_image(image_file)
         img = process_image(image_path, MODELS[disease_type].get("target_size", (224, 224)))
 
+        # Inside the analyze endpoint when processing results
         if MODELS[disease_type]["type"] == "huggingface":
             results = loaded_models[disease_type](img)
             top_result = results[0]
             label = str(top_result["label"])
             confidence = round(top_result["score"] * 100, 2)
             diagnosis = "Normal" if any(kw in label.lower() for kw in ["no", "normal", "negative"]) else "Infected"
+        elif MODELS[disease_type]["type"] == "yolo_local" or MODELS[disease_type]["type"] == "yolo":
+            results = loaded_models[disease_type].predict(image_path)
+            detections = results[0].boxes
+            confidence = round(detections.conf.max().item() * 100, 2) if len(detections) > 0 else 0
+            diagnosis = "Infected" if len(detections) > 0 else "Normal"
         else:
             results = loaded_models[disease_type].predict(image_path)
             detections = results[0].boxes
@@ -334,9 +482,12 @@ async def get_possible_diagnoses(analysis_results: Dict[str, Any]):
                 disease_type = model_type
                 break
         
+        # Inside get_possible_diagnoses endpoint
         if not disease_type:
             if "brain" in str(analysis_results).lower():
                 disease_type = "brain_tumor"
+            elif "breast" in str(analysis_results).lower():
+                disease_type = "breast_tumor"
             elif "lung" in str(analysis_results).lower() or "pneumonia" in str(analysis_results).lower():
                 disease_type = "pneumonia"
             elif "malaria" in str(analysis_results).lower() or "blood" in str(analysis_results).lower():

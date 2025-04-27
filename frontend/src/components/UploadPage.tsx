@@ -56,6 +56,7 @@ const UploadPage: React.FC<{ setResultData: (data: AnalysisResult | null) => voi
         <div className="protocol-selector">
           <label>Select Analysis Protocol:</label>
           <select
+            className="select-disease"
             value={diseaseType}
             onChange={(e) => {
               setDiseaseType(e.target.value as DiseaseType);
@@ -71,8 +72,9 @@ const UploadPage: React.FC<{ setResultData: (data: AnalysisResult | null) => voi
 
         <form onSubmit={handleSubmit}>
           <div className="file-upload-section">
+            {/* Medical Imaging Upload */}
             <div className="upload-group">
-              <label>Medical Imaging File</label>
+              <div className="upload-title">Medical Imaging File</div>
               <div className="upload-box">
                 <input
                   type="file"
@@ -92,8 +94,9 @@ const UploadPage: React.FC<{ setResultData: (data: AnalysisResult | null) => voi
               </div>
             </div>
 
+            {/* Clinical Document Upload */}
             <div className="upload-group">
-              <label>Clinical Document (PDF)</label>
+              <div className="upload-title">Clinical Document (PDF)</div>
               <div className="upload-box">
                 <input
                   type="file"

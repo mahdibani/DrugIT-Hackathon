@@ -5,7 +5,7 @@ import api from "../services/api";
 import "../App.css";
 
 interface ResultsPageProps {
-  resultData: AnalysisResult | null;
+  resultData: AnalysisResult | null;  
 }
 
 const ResultsPage: React.FC<ResultsPageProps> = ({ resultData }) => {
@@ -565,7 +565,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ resultData }) => {
 
         {showDoctorInput && (
           <div className="doctor-input-section">
-            <h2>Physician's Assessment</h2>
+            <h2>doctor's Assessment</h2>
             
             {/* Suggestion feature */}
             {isLoadingSuggestion && (

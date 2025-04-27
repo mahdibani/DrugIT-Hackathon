@@ -17,6 +17,8 @@ The system processes medical images and documents, provides clinical reasoning, 
 - **Secure API Orchestration**: FastAPI-based system managing requests, states, and workflows
 
 ## System Architecture
+![image](https://github.com/user-attachments/assets/36304865-f81e-4345-a035-4e023f28e25e)
+
 
 The platform consists of the following components:
 

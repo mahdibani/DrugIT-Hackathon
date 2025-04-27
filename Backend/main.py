@@ -7,6 +7,9 @@ from PIL import Image
 import shutil
 import os
 import uvicorn
+import time
+from functools import lru_cache
+import requests
 import logging
 import PyPDF2
 import io
@@ -88,6 +91,57 @@ for disease, config in MODELS.items():
         loaded_models[disease] = None
 logger.info("🚀 All medical models loaded!")
 
+
+
+def fetch_fda_drugs_for_condition(condition: str, limit: int = 5) -> List[Dict[str, Any]]:
+    """
+    Fetch drugs from FDA API based on a specific medical condition
+    """
+    try:
+        # Map common disease names to search terms
+        search_terms = {
+            "brain_tumor": "brain neoplasm OR brain tumor OR glioma",
+            "breast_tumor": "breast cancer OR breast carcinoma OR breast neoplasm",
+            "pneumonia": "pneumonia OR respiratory infection",
+            "malaria": "malaria OR anti-malarial"
+        }
+        
+        search_query = search_terms.get(condition, condition.replace("_", " "))
+        
+        # FDA API endpoint with search parameters
+        url = (
+            f"https://api.fda.gov/drug/label.json"
+            f"?search=indications_and_usage:{search_query}"
+            f"&limit={limit}"
+        )
+        
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        
+        if not data.get('results'):
+            logger.warning(f"No FDA drug results found for condition: {condition}")
+            return []
+        
+        # Process and format the results
+        drugs = []
+        for result in data['results']:
+            drug_info = {
+                "name": result.get("openfda", {}).get("brand_name", ["Unknown"])[0],
+                "description": result.get("indications_and_usage", ["No description available."])[0][:300],
+                "dosage": result.get("dosage_and_administration", ["Consult physician for appropriate dosage."])[0][:300],
+                "duration": "As directed by physician",
+                "contraindications": result.get("contraindications", ["No specific contraindications listed."])[0][:200],
+                "side_effects": result.get("adverse_reactions", ["Side effects not specified."])[0].split(". ")[:3]
+            }
+            drugs.append(drug_info)
+        
+        return drugs
+        
+    except Exception as e:
+        logger.error(f"Error fetching FDA drug data: {e}")
+        return []
+
+
 # Add breast tumor to the diagnosis database
 def load_diagnosis_database() -> Dict[str, Dict[str, Any]]:
     # Dummy database (You can replace this with your real database or load from file)
@@ -118,7 +172,6 @@ def load_diagnosis_database() -> Dict[str, Dict[str, Any]]:
         }
     }
 
-# Update treatments database to include breast tumor treatments
 def load_treatments_database() -> Dict[str, List[Dict[str, Any]]]:
     try:
         with open(TREATMENTS_DB_PATH, 'r') as f:
@@ -520,41 +573,97 @@ def get_severity_level(diagnosis_status: str, confidence: float) -> str:
 
 def select_treatments(disease_type: str, is_positive: bool) -> List[Dict[str, Any]]:
     """Select appropriate treatments based on disease type and diagnosis"""
-    treatments_db = load_treatments_database()
+    treatments = []
     
-    # If the disease type exists in treatments database and diagnosis is positive
-    if disease_type in treatments_db and is_positive:
-        # Return all available treatments for this disease type
-        available_treatments = treatments_db.get(disease_type, [])
-        # Limit to 3 treatments max
-        return available_treatments[:3]
-    
-    # For negative diagnoses or unavailable disease types, return supportive care recommendations
-    if disease_type == "brain_tumor":
-        return [{
-            "name": "Supportive Care - Headache Management",
-            "description": "Non-opioid pain relievers for headache management",
-            "dosage": "As directed on package or by physician",
-            "duration": "As needed for symptom relief",
-            "side_effects": ["Stomach upset", "Nausea"]
-        }]
-    elif disease_type == "pneumonia":
-        return [{
-            "name": "Supportive Care - Respiratory Support",
-            "description": "Mucolytic agents and expectorants to manage respiratory symptoms",
-            "dosage": "As directed on package or by physician",
-            "duration": "7-10 days or as needed",
-            "side_effects": ["Nausea", "Drowsiness"]
-        }]
-    else:  # malaria or others
-        return [{
-            "name": "Supportive Care - Symptomatic Relief",
-            "description": "Antipyretics and analgesics for fever and discomfort",
-            "dosage": "As directed on package or by physician",
-            "duration": "As needed for symptom relief",
-            "side_effects": ["Stomach upset", "Drowsiness"]
-        }]
+    # If positive diagnosis, get treatments from both sources
+    if is_positive:
+        # First try local database
+        try:
+            treatments_db = load_treatments_database()
+            local_treatments = treatments_db.get(disease_type, [])[:2]  # Get up to 2 from local DB
+            treatments.extend(local_treatments)
+        except Exception as e:
+            logger.error(f"Error loading local treatments: {e}")
+        
+        # Then supplement with FDA API data
+        try:
+            fda_treatments = fetch_fda_drugs_for_condition(disease_type, limit=3)
+            
+            # Avoid duplicates by name
+            existing_names = {t["name"].lower() for t in treatments}
+            
+            for fda_drug in fda_treatments:
+                # Get the drug name, skip if it's missing or empty
+                drug_name = fda_drug.get("name", "").strip()
+                
+                if drug_name == 'Unknown':  # Skip this drug if no name is available
+                    continue
+                
+                # Avoid duplicates based on the drug name
+                if drug_name.lower() not in existing_names:
+                    fda_drug["name"] = drug_name  # Ensure the name is properly set
+                    treatments.append(fda_drug)
+                    existing_names.add(drug_name.lower())
+                    
+                    # Limit to 5 treatments total
+                    if len(treatments) >= 5:
+                        break
+        except Exception as e:
+            logger.error(f"Error fetching FDA treatments: {e}")
 
+
+    
+
+    @lru_cache(maxsize=32)
+    def cached_fetch_fda_drugs(condition: str, timestamp: int):
+        """
+        Cache wrapper for FDA API calls
+        The timestamp parameter ensures cache expiry every day
+        """
+        return fetch_fda_drugs_for_condition(condition)
+
+    def get_fda_drugs_with_cache(condition: str):
+        """Get FDA drugs with caching - refreshed once per day"""
+        # Use the current day as timestamp (changes once per day)
+        day_timestamp = int(time.time()) // 86400
+        return cached_fetch_fda_drugs(condition, day_timestamp)
+
+    # If we still have no treatments or diagnosis is negative
+    if not treatments:
+        if disease_type == "brain_tumor":
+            return [{
+                "name": "Supportive Care - Headache Management",
+                "description": "Non-opioid pain relievers for headache management",
+                "dosage": "As directed on package or by physician",
+                "duration": "As needed for symptom relief",
+                "side_effects": ["Stomach upset", "Nausea"]
+            }]
+        elif disease_type == "breast_tumor":
+            return [{
+                "name": "Supportive Care - Breast Health Monitoring",
+                "description": "Regular self-examination and follow-up imaging",
+                "dosage": "Monthly self-examination",
+                "duration": "Ongoing",
+                "side_effects": ["No side effects"]
+            }]
+        elif disease_type == "pneumonia":
+            return [{
+                "name": "Supportive Care - Respiratory Support",
+                "description": "Mucolytic agents and expectorants to manage respiratory symptoms",
+                "dosage": "As directed on package or by physician",
+                "duration": "7-10 days or as needed",
+                "side_effects": ["Nausea", "Drowsiness"]
+            }]
+        else:  # malaria or others
+            return [{
+                "name": "Supportive Care - Symptomatic Relief",
+                "description": "Antipyretics and analgesics for fever and discomfort",
+                "dosage": "As directed on package or by physician",
+                "duration": "As needed for symptom relief",
+                "side_effects": ["Stomach upset", "Drowsiness"]
+            }]
+    
+    return treatments
 
 # Fix: Updated endpoint to correctly parse request body
 @app.post("/review_treatments")

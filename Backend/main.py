@@ -40,15 +40,16 @@ client = OpenAI(
 # Medical imaging models configuration
 MODELS = {
     "brain_tumor": {
-        "type": "huggingface",
-        "model_name": "shimaGh/Brain-Tumor-Detection",
-        "target_size": (224, 224)
+        "type": "yolo_local",
+        "model_path": "yolov8_medical_detection.pt", 
+        "target_size": (640, 640), 
+        "conf_threshold": 0.25  
     },
     "breast_tumor": {
-        "type": "yolo_local",  # Changed from "local" to "yolo_local" for clarity
+        "type": "yolo_local",
         "model_path": "yolov8_medical_detection.pt", 
-        "target_size": (640, 640),  # Updated to standard YOLO image size
-        "conf_threshold": 0.25  # Added confidence threshold for detections
+        "target_size": (640, 640), 
+        "conf_threshold": 0.25  
     },
     "pneumonia": {
         "type": "huggingface",

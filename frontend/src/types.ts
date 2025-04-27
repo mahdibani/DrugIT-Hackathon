@@ -1,8 +1,12 @@
-// src/types.ts
 export interface AnalysisResult {
-    diagnosis?: string;
-    confidence?: string;
-    care_pathway?: string;
-    advice?: string;
-    error?: string;
+    medical_imaging: {
+      diagnosis: string;
+      confidence: string;
+      model_type: string;
+    };
+    document_analysis: {
+      summary: string;
+      page_count: number;
+      file_name: string;
+    };
   }

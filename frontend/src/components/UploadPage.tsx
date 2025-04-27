@@ -2,119 +2,145 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { AnalysisResult } from "../types";
-type DiseaseType = 'brain_tumor' | 'breast_cancer' | 'pneumonia' | 'skin_cancer' | 'malaria';
+import "../App.css";
 
-interface UploadPageProps {
-  setResultData: (data: AnalysisResult | null) => void;
-}
+type DiseaseType = 'brain_tumor' | 'pneumonia' | 'malaria';
 
-const diseaseRequirements: Record<DiseaseType, string> = {
-  brain_tumor: "MRI/CT scan images (PNG/JPG)",
-  breast_cancer: "Mammography images (PNG/JPG)",
-  pneumonia: "Chest X-ray images (PNG/JPG)",
-  skin_cancer: "Dermatoscopy images (PNG/JPG)",
-  malaria: "Blood smear microscopy images (PNG/JPG)"
-};
-
-const UploadPage: React.FC<UploadPageProps> = ({ setResultData }) => {
-  
+const UploadPage: React.FC<{ setResultData: (data: AnalysisResult | null) => void }> = ({ setResultData }) => {
   const navigate = useNavigate();
-  const [file, setFile] = useState<File | null>(null);
-  const [diseaseType, setDiseaseType] = useState("brain_tumor");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [diseaseType, setDiseaseType] = useState<DiseaseType>("brain_tumor");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) {
-      setError("Please select a file");
+    if (!imageFile || !pdfFile) {
+      setError("Please upload both required files");
       return;
     }
 
     setIsLoading(true);
     setError("");
-    setResultData(null); // Clear previous results
+    setResultData(null);
 
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("image_file", imageFile);
+      formData.append("pdf_file", pdfFile);
       formData.append("disease_type", diseaseType);
 
-      const response = await api.post<AnalysisResult>("/predict/", formData, {
+      const response = await api.post<AnalysisResult>("/analyze", formData, {
         headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000
+        timeout: 45000
       });
-
-      if (response.data.error) {
-        throw new Error(response.data.error);
-      }
 
       setResultData(response.data);
       navigate("/results");
     } catch (err: any) {
-      setResultData(null);
-      setError(err.response?.data?.detail || 
-              err.message || 
-              "Analysis failed. Please try again.");
+      setError(err.response?.data?.detail || "Analysis failed. Please check files and try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="upload-page">
-      <h1>Medical Image Analysis</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Select Condition:</label>
+    <div className="container">
+      <div className="upload-page">
+        <header className="header">
+          <h1>Medical Insight Platform</h1>
+          <p className="subtitle">Integrated Imaging and Clinical Document Analysis</p>
+        </header>
+
+        <div className="protocol-selector">
+          <label>Select Analysis Protocol:</label>
           <select
             value={diseaseType}
             onChange={(e) => {
-              setDiseaseType(e.target.value);
-              setFile(null);
+              setDiseaseType(e.target.value as DiseaseType);
+              setImageFile(null);
               setError("");
             }}
           >
-            <option value="brain_tumor">Brain Tumor</option>
-            <option value="breast_cancer">Breast Cancer</option>
-            <option value="pneumonia">Pneumonia</option>
-            <option value="skin_cancer">Skin Cancer</option>
-            <option value="malaria">Malaria</option>
+            <option value="brain_tumor">Neuroimaging Analysis</option>
+            <option value="pneumonia">Pulmonary Assessment</option>
+            <option value="malaria">Hematological Screening</option>
           </select>
         </div>
 
-        <div className="form-group">
-          <label>Upload Image:</label>
-          <input
-            type="file"
-            onChange={(e) => {
-              setFile(e.target.files?.[0] || null);
-              setError("");
-            }}
-            accept="image/png, image/jpeg"
-          />
-          <p className="file-requirements">
-           
-          </p>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="file-upload-section">
+            <div className="upload-group">
+              <label>Medical Imaging File</label>
+              <div className="upload-box">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                />
+                {imageFile && (
+                  <div className="file-preview">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <span>{imageFile.name}</span>
+                  </div>
+                )}
+              </div>
+            </div>
 
-        {error && <div className="error-message">{error}</div>}
+            <div className="upload-group">
+              <label>Clinical Document (PDF)</label>
+              <div className="upload-box">
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                />
+                {pdfFile && (
+                  <div className="file-preview">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <path d="M10 9H8"></path>
+                      <path d="M16 13H8"></path>
+                      <path d="M16 17H8"></path>
+                    </svg>
+                    <span>{pdfFile.name}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
-        <button 
-          type="submit" 
-          disabled={isLoading}
-          className={isLoading ? "loading" : ""}
-        >
-          {isLoading ? (
-            <>
-              <span className="spinner"></span>
-              Analyzing...
-            </>
-          ) : (
-            "Analyze Image"
-          )}
-        </button>
-      </form>
+          {error && <div className="error-message">{error}</div>}
+
+          <button 
+            type="submit" 
+            className={`button ${isLoading ? "loading" : ""}`}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className="spinner"></span>
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Start Analysis
+              </>
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

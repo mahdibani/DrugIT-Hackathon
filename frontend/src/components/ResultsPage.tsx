@@ -1,61 +1,89 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AnalysisResult } from "../types";
+import "../App.css";
 
-interface ResultsPageProps {
-  resultData: AnalysisResult | null;
-}
-
-const ResultsPage: React.FC<ResultsPageProps> = ({ resultData }) => {
+const ResultsPage: React.FC<{ resultData: AnalysisResult | null }> = ({ resultData }) => {
   const navigate = useNavigate();
 
   if (!resultData) {
     return (
-      <div className="results-page">
-        <h2>No results available</h2>
-        <button onClick={() => navigate("/")}>Back to Upload</button>
+      <div className="container">
+        <div className="results-page">
+          <h2>No results available</h2>
+          <button className="button" onClick={() => navigate("/")}>
+            Back to Upload
+          </button>
+        </div>
       </div>
     );
   }
 
-  // Safely handle diagnosis with type checking
-  const diagnosis = typeof resultData.diagnosis === 'string' 
-    ? resultData.diagnosis 
-    : "No diagnosis available";
-
-  const isCritical = diagnosis.toLowerCase().includes("tumor") || 
-                     diagnosis.toLowerCase().includes("cancer");
+  const { medical_imaging, document_analysis } = resultData;
+  const isCritical = medical_imaging.diagnosis === "Infected";
+  const confidenceValue = parseFloat(medical_imaging.confidence.replace('%', ''));
+  const isLowConfidence = confidenceValue < 85;
 
   return (
-    <div className={`results-page ${isCritical ? "critical" : "normal"}`}>
-      <h1>Analysis Results</h1>
-      
-      <div className="result-card">
-        <div className="diagnosis">
-          <h2>Diagnosis:</h2>
-          <p className={isCritical ? "critical-text" : "normal-text"}>
-            {diagnosis}
-          </p>
-          <p>Confidence: {resultData.confidence || "N/A"}</p>
+    <div className="container">
+      <div className={`results-page ${isCritical ? "critical" : "normal"}`}>
+        <h1>Integrated Medical Analysis Report</h1>
+
+        <div className="result-sections">
+          <div className={`result-card ${isCritical ? "critical" : "normal"}`}>
+            <h2>Imaging Analysis</h2>
+            <div className="result-item">
+              <span>Clinical Finding:</span>
+              <span className={isCritical ? "critical-text" : ""}>
+                {medical_imaging.diagnosis}
+              </span>
+            </div>
+            <div className="result-item">
+              <span>Confidence Level:</span>
+              <span>{medical_imaging.confidence}</span>
+            </div>
+            <div className="result-item">
+              <span>Analysis Method:</span>
+              <span>{medical_imaging.model_type.toUpperCase()} Model</span>
+            </div>
+            
+            {isLowConfidence && (
+              <div className="confidence-warning">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12" y2="16"></line>
+                </svg>
+                Moderate Confidence - Consider additional verification
+              </div>
+            )}
+          </div>
+
+          <div className="result-card">
+            <h2>Clinical Document Summary</h2>
+            <div className="result-item">
+              <span>Document:</span>
+              <span>{document_analysis.file_name}</span>
+            </div>
+            <div className="result-item">
+              <span>Pages Analyzed:</span>
+              <span>{document_analysis.page_count}</span>
+            </div>
+            <div className="summary-content">
+              <h3>Key Insights</h3>
+              {document_analysis.summary.split('\n').map((line, index) => (
+                <p key={index}>{line}</p>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="care-pathway">
-          <h3>Recommended Care Pathway:</h3>
-          <p>{resultData.care_pathway || "Consult medical specialist"}</p>
-        </div>
-
-        <div className="advice">
-          <h3>Medical Advice:</h3>
-          <p>{resultData.advice || "Please consult a healthcare professional"}</p>
+        <div className="action-bar">
+          <button className="button" onClick={() => navigate("/")}>
+            Start New Analysis
+          </button>
         </div>
       </div>
-
-      <button 
-        onClick={() => navigate("/")}
-        className="upload-another"
-      >
-        Upload Another Image
-      </button>
     </div>
   );
 };

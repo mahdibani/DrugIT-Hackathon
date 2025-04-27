@@ -15,3 +15,5 @@ jax
 jaxlib
 ultralytics
 python-multipart
+PyPDF2
+openai
